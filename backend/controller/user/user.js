@@ -77,7 +77,36 @@ const followUnfollowUserProfile = async (req, res) => {
   }
 };
 
-const getSuggestedUsers = async (req, res) => {};
+const getSuggestedUsers = async (req, res) => {
+  const userid = req.User._id;
+  try {
+    if (!userid) {
+      console.log("User not found");
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const currentuser = await user.findById(userid);
+    if (!currentuser) {
+      console.log("User not found");
+      return res.status(404).json({ message: "User not found" });
+    }
+    console.log(currentuser);
+
+    const suggestedUsers = await user.aggregate([
+      { $match: { _id: { $ne: userid } } },
+      { $sample: { size: 10 } },
+    ]);
+
+    const filtering = suggestedUsers.filter((user) => {
+      return !currentuser.following.includes(user._id);
+    });
+    const suggested = filtering.slice(0, 5);
+    res.status(200).json({ suggested });
+  } catch (error) {
+    console.log(error.message);
+    return res.status(500).json({ message: error.message });
+  }
+};
 
 module.exports = {
   getUserProfile,

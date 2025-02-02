@@ -12,8 +12,11 @@ const Register = async (req, res) => {
 
   try {
     const emailExists = await user.findOne({ email: formData.email });
-    const usernameExists = await user.findOne({ userName: formData.userName });
+    const usernameExists = await user.findOne({ userName: formData.username });
     if (emailExists || usernameExists) {
+      console.log(emailExists);
+      console.log(usernameExists);
+      
       return res.status(400).json({
         error: "User or email already exists",
         success: false,

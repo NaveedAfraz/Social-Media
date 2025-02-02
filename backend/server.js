@@ -17,9 +17,10 @@ app.use(
 
 // console.log(process.env.MONGODB_URL);
 const authRoutes = require("./routes/auth/auth");
+const userRoutes = require("./routes/user/user");
 const db = require("./db/database");
 app.use("/api/auth", authRoutes);
-
+app.use("/api/user", userRoutes);
 const port = process.env.PORT;
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

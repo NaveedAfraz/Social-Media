@@ -22,6 +22,8 @@ const protectedRoute = async (req, res, next) => {
         .json({ message: "User not found", success: false });
     }
     req.User = storeduser;
+    console.log(storeduser,"stored user");
+    
     next();
   } catch (error) {
     return res.status(401).json({ message: "Unauthorized ." });

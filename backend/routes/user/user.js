@@ -8,5 +8,6 @@ const router = express.Router();
 
 router.get("/getUser/:username", protectedRoute, getUserProfile);
 router.post("/follow/:id", protectedRoute, followUnfollowUserProfile);
+router.post("/suggestedUsers", protectedRoute, getSuggestedUsers); 
 
 module.exports = router;

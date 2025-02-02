@@ -1,3 +1,4 @@
+const Nodification = require("../../models/nodification");
 const user = require("../../models/userSchema");
 
 const getUserProfile = async (req, res) => {
@@ -45,18 +46,41 @@ const followUnfollowUserProfile = async (req, res) => {
         $pull: { followers: userid },
       });
       await user.findByIdAndUpdate(userid, { $pull: { following: id } });
-      return res.status(200).json({ message: "User unfollowed" });
+      const notification = new Nodification({
+        senderId: userid,
+        receiverId: id,
+        message: `${currentuser.username} unfollowed you`,
+      });
+      await notification.save();
+      return res
+        .status(200)
+        .json({ message: "User unfollowed", Nodification: notification });
     } else {
       //follow
       await user.findByIdAndUpdate(userid, {
         $push: { following: id },
       });
       await user.findByIdAndUpdate(id, { $push: { followers: userid } });
-      return res.status(200).json({ message: "User followed" });
+      const notification = new Nodification({
+        senderId: userid,
+        receiverId: id,
+        message: `${currentuser.username} started following you`,
+      });
+      await notification.save();
+      return res
+        .status(200)
+        .json({ message: "User followed", Nodification: notification });
     }
   } catch (error) {
     console.log(error.message);
     return res.status(500).json({ message: error.message });
   }
 };
-module.exports = { getUserProfile, followUnfollowUserProfile };
+
+const getSuggestedUsers = async (req, res) => {};
+
+module.exports = {
+  getUserProfile,
+  followUnfollowUserProfile,
+  getSuggestedUsers,
+};

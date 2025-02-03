@@ -1,3 +1,4 @@
+const cloudinary = require("cloudinary").v2;
 const Nodification = require("../../models/nodification");
 const user = require("../../models/userSchema");
 
@@ -109,9 +110,13 @@ const getSuggestedUsers = async (req, res) => {
 };
 
 const updateUserProfile = async (req, res) => {
-  const { username, email, coverImg, profileImg, bio } = req.body;
-  console.log(username, email, coverImg, profileImg, bio);
+  const { username, email, newPassword, currentPassword, bio } = req.body;
 
+  let coverImg = req.body.coverImg;
+  let profileImg = req.body.profileImg;
+
+  console.log(coverImg, profileImg);
+  console.log(username, email, bio);
   if (!username || !email || !coverImg || !profileImg || !bio) {
     console.log("some of the details to update is missing");
     return res
@@ -120,11 +125,54 @@ const updateUserProfile = async (req, res) => {
   }
   const userid = req.User._id;
   try {
+    const data = await user.findById(userid);
+
+    if (!data) {
+      console.log("User not found");
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (data.password !== currentPassword) {
+      console.log("Current password is incorrect");
+      return res
+        .status(400)
+        .json({ message: "Current password is incorrect didn't match" });
+    }
+
+    if (
+      (currentPassword && !newPassword) ||
+      (newPassword && !currentPassword)
+    ) {
+      console.log("current password and new password are required");
+      return res
+        .status(400)
+        .json({ message: "current password and new password are required" });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    if (profileImg) {
+      if (data.profileImg) {
+        await cloudinary.uploader.destroy(data.profileImg);
+      }
+      const updatedImg = await cloudinary.uploader.upload(profileImg);
+      profileImg = updatedImg.secure_url;
+
+      if (coverImg) {
+        if (data.coverImg) {
+          await cloudinary.uploader.destroy(data.coverImg);
+        }
+        const uploadedCoverImg = await cloudinary.uploader.upload(coverImg);
+        coverImg = uploadedCoverImg.secure_url;
+      }
+    }
+
     const updatedUser = await user.findByIdAndUpdate(
       userid,
       {
         username,
         email,
+        password: hashedPassword,
         coverImg,
         profileImg,
         bio,

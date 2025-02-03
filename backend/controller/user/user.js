@@ -108,8 +108,47 @@ const getSuggestedUsers = async (req, res) => {
   }
 };
 
+const updateUserProfile = async (req, res) => {
+  const { username, email, coverImg, profileImg, bio } = req.body;
+  console.log(username, email, coverImg, profileImg, bio);
+
+  if (!username || !email || !coverImg || !profileImg || !bio) {
+    console.log("some of the details to update is missing");
+    return res
+      .status(400)
+      .json({ message: "some of the details to update is missing" });
+  }
+  const userid = req.User._id;
+  try {
+    const updatedUser = await user.findByIdAndUpdate(
+      userid,
+      {
+        username,
+        email,
+        coverImg,
+        profileImg,
+        bio,
+      },
+      { new: true }
+    );
+    console.log(updatedUser);
+
+    if (!updatedUser) {
+      console.log("User not found");
+      return res.status(404).json({ message: "User not found" });
+    }
+    return res
+      .status(200)
+      .json({ message: "Profile updated", user: updatedUser });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   getUserProfile,
   followUnfollowUserProfile,
   getSuggestedUsers,
+  updateUserProfile,
 };

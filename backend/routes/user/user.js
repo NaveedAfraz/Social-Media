@@ -4,6 +4,7 @@ const {
   getUserProfile,
   followUnfollowUserProfile,
   getSuggestedUsers,
+  updateUserProfile,
 } = require("../../controller/user/user");
 const router = express.Router();
 

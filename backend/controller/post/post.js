@@ -156,8 +156,8 @@ const likeUnlikePost = async (req, res) => {
         $pull: { likes: userid },
       });
       const notification = new Notification({
-        sender: userid,
-        receiver: Post.user._id,
+        senderId: userid,
+        receiverId: Post.user._id,
         message: `${USER.username} unliked your post`,
       });
       // console.log("post unlike before appending:", postLike);
@@ -189,8 +189,8 @@ const likeUnlikePost = async (req, res) => {
       });
       console.log("this is liked post:", likedPost);
       const notification = new Notification({
-        sender: userid,
-        receiver: Post.user._id,
+        senderId: userid,
+        receiverId: Post.user._id,
         message: `${USER.username} liked your post`,
       });
 
@@ -239,7 +239,9 @@ const fetchfollowingPost = async (req, res) => {
     if (!userData) return res.status(400).json({ message: "User not found" });
 
     const following = userData.following;
-    if (!following)
+    // console.log(following);
+
+    if (following.length == 0)
       return res.status(400).json({ message: "No following found" });
 
     const followingPosts = await post.find(
@@ -269,14 +271,19 @@ const fetchUserPosts = async (req, res) => {
     const userposts = await post
       .find({ user: userid })
       .sort({ createdAt: -1 })
-      .populate("user")
-      .populate("comments");
+      .populate({
+        path: "user",
+        select: "-password",
+      })
+      .populate({
+        path: "comments",
+        select: "-password",
+      });
 
     if (!userposts) return res.status(400).json({ message: "No posts found" });
     return res
       .status(200)
       .json({ message: "User posts fetched successfully", userposts });
-      
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Internal Server Error" });

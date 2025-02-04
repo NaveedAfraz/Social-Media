@@ -21,10 +21,12 @@ app.use(
 const authRoutes = require("./routes/auth/auth");
 const userRoutes = require("./routes/user/user");
 const postRoutes = require("./routes/post/post");
+const nodificationRoutes = require("./routes/nodification/nodification");
 const db = require("./db/database");
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/posts", postRoutes);
+app.use("/api/nodification", nodificationRoutes);
 const port = process.env.PORT;
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

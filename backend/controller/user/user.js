@@ -1,6 +1,7 @@
 const cloudinary = require("cloudinary").v2;
 const Nodification = require("../../models/nodification");
 const user = require("../../models/userSchema");
+const bcrypt = require("bcryptjs");
 
 const getUserProfile = async (req, res) => {
   const { username } = req.params;
@@ -117,7 +118,7 @@ const updateUserProfile = async (req, res) => {
 
   console.log(coverImg, profileImg);
   console.log(username, email, bio);
-  if (!username || !email || !coverImg || !profileImg || !bio) {
+  if (!username || !email || !bio ) {
     console.log("some of the details to update is missing");
     return res
       .status(400)
@@ -132,8 +133,10 @@ const updateUserProfile = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    if (data.password !== currentPassword) {
-      console.log("Current password is incorrect");
+    const check = await bcrypt.compare(currentPassword, data.password);
+    if (!check) {
+      console.log(check);
+
       return res
         .status(400)
         .json({ message: "Current password is incorrect didn't match" });
@@ -150,6 +153,8 @@ const updateUserProfile = async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
+    console.log("Cloudinary API Key:", process.env.CLOUDINARY_API_KEY);
+    console.log("Cloudinary API Secret: ", process.env.CLOUDINARY_API_SECRET);
 
     if (profileImg) {
       if (data.profileImg) {
@@ -157,6 +162,7 @@ const updateUserProfile = async (req, res) => {
       }
       const updatedImg = await cloudinary.uploader.upload(profileImg);
       profileImg = updatedImg.secure_url;
+      console.log("updated img is :", updatedImg);
 
       if (coverImg) {
         if (data.coverImg) {
@@ -170,12 +176,12 @@ const updateUserProfile = async (req, res) => {
     const updatedUser = await user.findByIdAndUpdate(
       userid,
       {
-        username,
-        email,
+        username: username,
+        email: email,
         password: hashedPassword,
-        coverImg,
-        profileImg,
-        bio,
+        coverImg: coverImg,
+        profileImg: profileImg,
+        bio: bio,
       },
       { new: true }
     );

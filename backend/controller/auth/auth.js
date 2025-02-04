@@ -16,7 +16,7 @@ const Register = async (req, res) => {
     if (emailExists || usernameExists) {
       console.log(emailExists);
       console.log(usernameExists);
-      
+
       return res.status(400).json({
         error: "User or email already exists",
         success: false,
@@ -104,12 +104,17 @@ const logout = async (req, res) => {
   // const { formData } = req.body;
 
   try {
-    res.clearCookie("authtoken", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "none",
-    });
-    return res.status(200).json({ success: true });
+    if (req.cookies.authtoken) {
+      console.log(req.cookies.authtoken);
+
+      res.clearCookie("authtoken", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "none",
+      });
+      return res.status(200).json({ success: true });
+    }
+    return res.status(400).json({ error: "No cookie found" });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ error: "Internal Server Error" });

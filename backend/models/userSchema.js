@@ -23,6 +23,7 @@ const userSchema = new Schema(
       type: String,
       default: "",
     },
+    likedPosts: [{ type: Schema.Types.ObjectId, ref: "post" }],
   },
   { timestamps: true }
 );

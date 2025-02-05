@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { MdOutlineMail, MdPassword, MdPerson } from "react-icons/md";
 import { Link } from "react-router-dom";
 import XLogo from "../../assets/X-black-copy.jpg";
-
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
 function SignupPage() {
   const [formData, setFormData] = useState({
     username: "",
@@ -15,9 +16,28 @@ function SignupPage() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const query = useQueryClient();
+
+  const { isPending, isError, isSuccess, mutate } = useMutation({
+    mutationFn: (data) => {
+      try {
+        const res = axios.post(
+          "http://localhost:3006/api/auth/signup",
+          {
+            data,
+          },
+          { withCredentials: true }
+        );
+        return res.data;
+      } catch (error) {
+        console.log("something went wrong", error);
+      }
+    },
+  });
   const handleSubmit = (e) => {
     e.preventDefault();
     // Add your submit logic here
+    mutate(formData);
   };
 
   return (

@@ -14,9 +14,10 @@ function App() {
         <div className="flex ">
           <Sidebar />
           <Routes>
-            <Route path="/home" element={<Home />}></Route>
+            {" "}
             <Route path="/login" element={<Login />}></Route>
             <Route path="/signUp" element={<SignUp />}></Route>
+            <Route path="/home" element={<Home />}></Route>
             <Route path="/notifications" element={<NotificationPage />} />
             <Route path="/profile/:username" element={<ProfilePage />} />
           </Routes>

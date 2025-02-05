@@ -18,25 +18,40 @@ function SignupPage() {
 
   const query = useQueryClient();
 
-  const { isPending, isError, isSuccess, mutate } = useMutation({
-    mutationFn: (data) => {
+  const { isPending, isError, isSuccess, mutate, error } = useMutation({
+    mutationFn: async (data) => {
+      // const formData = data;
+      // console.log(formData);
+
+      if (formData.password !== formData.confirmPassword) {
+        throw new Error("Passwords do not match!");
+      }
+
       try {
-        const res = axios.post(
-          "http://localhost:3006/api/auth/signup",
+        const res = await axios.post(
+          "http://localhost:3006/api/auth/register",
           {
-            data,
+            formData: data,
           },
           { withCredentials: true }
         );
+        console.log(res);
         return res.data;
       } catch (error) {
         console.log("something went wrong", error);
+
+        throw error.response.data;
       }
+    },
+    onSuccess: (data) => {
+      console.log("Registration successful!", data);
     },
   });
   const handleSubmit = (e) => {
     e.preventDefault();
     // Add your submit logic here
+    if (formData.password !== formData.confirmPassword) {
+    }
     mutate(formData);
   };
 
@@ -128,8 +143,10 @@ function SignupPage() {
             type="submit"
             className="btn btn-outline rounded-full text-white w-full"
           >
-            Sign Up
+            {isPending ? "Loading..." : "Sign up"}
           </button>
+          {isError && <p className="text-red-500">{error.message}</p>}
+          {isSuccess && <p>Registration successful! Welcome aboard.</p>}
         </form>
 
         <div className="flex flex-col gap-2 mt-4 w-full max-w-sm">
@@ -140,6 +157,15 @@ function SignupPage() {
             </button>
           </Link>
         </div>
+        {isSuccess && (
+          <div className="toast">
+            <div className="alert alert-info">
+              <span>
+                {isSuccess && <p>Registration successful! Welcome aboard.</p>}
+              </span>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

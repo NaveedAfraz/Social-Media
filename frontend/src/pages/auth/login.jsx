@@ -3,9 +3,42 @@ import { MdOutlineMail } from "react-icons/md";
 import { MdPassword } from "react-icons/md";
 import { Link } from "react-router-dom";
 import XLogo from "../../assets/X-black-copy.jpg";
-
+import { useMutation } from "@tanstack/react-query";
+import axios from "axios";
+import { useDispatch } from "react-redux";
+import { isAuth } from "../../redux/authSlice";
 function LoginPage() {
-  const [formdata, setFormData] = useState({ username: "", password: "" });
+  const [formdata, setFormData] = useState({ email: "", password: "" });
+  const dispatch = useDispatch();
+  const { isPending, isError, isSuccess, mutate, error } = useMutation({
+    mutationFn: async (data) => {
+      console.log(data);
+      try {
+        const res = await axios.post(
+          "http://localhost:3006/api/auth/login",
+          {
+            formData: data,
+          },
+          {
+            withCredentials: true,
+          }
+        );
+        // console.log(res);
+
+        return res.data;
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    onSuccess: (data) => {
+      console.log(data);
+      dispatch(isAuth(data));
+    },
+
+    onError: (error) => {
+      console.log(error);
+    },
+  });
 
   const handleInputChange = (e) => {
     setFormData({ ...formdata, [e.target.name]: e.target.value });
@@ -14,6 +47,7 @@ function LoginPage() {
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log(formdata);
+    mutate(formdata);
   };
 
   return (
@@ -43,11 +77,12 @@ function LoginPage() {
             <MdOutlineMail className="absolute ml-3 text-gray-400 text-xl top-1/2 transform -translate-y-1/2" />
             <input
               type="text"
-              name="username"
+              name="email"
               placeholder="Email"
               className="w-full bg-black text-white border-2 border-gray-700 rounded-3xl pl-12 py-3 focus:outline-none "
-              value={formdata.username}
+              value={formdata.email}
               onChange={handleInputChange}
+              required
             />
           </div>
 

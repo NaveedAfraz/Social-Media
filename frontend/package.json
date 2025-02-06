@@ -11,12 +11,14 @@
     "start": "npm run dev"
   },
   "dependencies": {
+    "@reduxjs/toolkit": "^2.5.1",
     "@tailwindcss/vite": "^4.0.3",
     "@tanstack/react-query": "^5.66.0",
     "axios": "^1.7.9",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-icons": "^5.4.0",
+    "react-redux": "^9.2.0",
     "react-router-dom": "^7.1.5",
     "tailwindcss": "^4.0.3"
   },
@@ -31,6 +33,7 @@
     "eslint-plugin-react-hooks": "^5.0.0",
     "eslint-plugin-react-refresh": "^0.4.16",
     "globals": "^15.14.0",
-    "vite": "^6.0.5"
+    "vite": "^6.0.5",
+    "vite-tsconfig-paths": "^5.1.4"
   }
 }

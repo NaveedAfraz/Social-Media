@@ -49,7 +49,6 @@ function SignupPage() {
   });
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Add your submit logic here
     if (formData.password !== formData.confirmPassword) {
     }
     mutate(formData);
@@ -102,7 +101,6 @@ function SignupPage() {
               onChange={handleInputChange}
             />
           </div>
-
           {/* Password Input */}
           <div className="relative">
             <MdPassword className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xl" />
@@ -145,8 +143,9 @@ function SignupPage() {
           >
             {isPending ? "Loading..." : "Sign up"}
           </button>
-          {isError && <p className="text-red-500">{error.message}</p>}
-          {isSuccess && <p>Registration successful! Welcome aboard.</p>}
+          
+          {/* {isError && <p className="text-red-500">{error.message}</p>}
+          {isSuccess && <p>Registration successful! Welcome aboard.</p>} */}
         </form>
 
         <div className="flex flex-col gap-2 mt-4 w-full max-w-sm">
@@ -157,11 +156,12 @@ function SignupPage() {
             </button>
           </Link>
         </div>
-        {isSuccess && (
+        {(isSuccess || isError) && (
           <div className="toast">
             <div className="alert alert-info">
               <span>
                 {isSuccess && <p>Registration successful! Welcome aboard.</p>}
+                {isError && <p className="text-red-400 font-bold text-sm">{error.message}</p>}
               </span>
             </div>
           </div>

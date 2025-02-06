@@ -1,17 +1,55 @@
-import XLogo from "../../assets/X-black-copy.jpg"
+import XLogo from "../../assets/X-black-copy.jpg";
 import { MdHomeFilled } from "react-icons/md";
 import { IoNotifications } from "react-icons/io5";
 import { FaUser } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { BiLogOut } from "react-icons/bi";
-
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { isAuth } from "../../redux/authSlice";
 const Sidebar = () => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const data = {
     fullName: "John Doe",
     username: "johndoe",
     profileImg: "/avatars/boy1.png",
   };
-
+  const queryClient = useQueryClient();
+  const {
+    isError,
+    isSuccess,
+    mutate: logoutMutate,
+  } = useMutation({
+    mutationFn: async () => {
+      const res = await axios.post(
+        "http://localhost:3006/api/auth/logout",
+        {},
+        {
+          withCredentials: true,
+        }
+      );
+      return res.data;
+    },
+    onSuccess: (data) => {
+      console.log("Logout successful");
+      console.log(data);
+      if (data.success) {
+        navigate("/login");
+        queryClient.invalidateQueries({ queryKey: ["authUser"] });
+        dispatch(isAuth(false));
+      }
+    },
+    onError: (error) => {
+      console.log("Logout failed", error);
+    },
+  });
+  const handleLogout = () => {
+    // alert("Logout");
+    logoutMutate();
+  };
   return (
     <div className="md:flex-[2_2_0]  w-80 max-w-52">
       <div className="sticky top-0 left-0 h-screen flex flex-col border-r border-gray-700 w-20 md:w-full">
@@ -68,7 +106,10 @@ const Sidebar = () => {
                 </p>
                 <p className="text-slate-500 text-sm">@{data?.username}</p>
               </div>
-              <BiLogOut className="w-5 h-5 cursor-pointer" />
+              <BiLogOut
+                onClick={handleLogout}
+                className="w-5 h-5 cursor-pointer"
+              />
             </div>
           </Link>
         )}

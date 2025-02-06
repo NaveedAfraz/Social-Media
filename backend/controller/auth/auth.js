@@ -4,6 +4,7 @@ const user = require("../../models/userSchema");
 const jwt = require("jsonwebtoken");
 const Register = async (req, res) => {
   const { formData } = req.body;
+  console.log(formData);
 
   if (!formData.username || !formData.email || !formData.password) {
     console.log("form Data is missing");
@@ -52,6 +53,7 @@ const Register = async (req, res) => {
 
 const Login = async (req, res) => {
   const { formData } = req.body;
+  console.log(formData);
 
   if (!formData.password || !formData.email) {
     console.log("email or password is missing");
@@ -91,7 +93,6 @@ const Login = async (req, res) => {
     res.cookie("authtoken", Authtoken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "none",
     });
     return res.status(200).json({ success: true, user: userExists });
   } catch (error) {
@@ -110,7 +111,6 @@ const logout = async (req, res) => {
       res.clearCookie("authtoken", {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "none",
       });
       return res.status(200).json({ success: true });
     }

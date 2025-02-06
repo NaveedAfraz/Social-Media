@@ -8,7 +8,7 @@ app.use(cookieParser());
 dotenv.config();
 require("./config/cloudinary");
 
-app.use;
+
 app.use(
   cors({
     origin: "http://localhost:5173",
@@ -16,6 +16,7 @@ app.use(
     methods: ["GET,PUT,POST,DELETE"],
   })
 );
+
 
 // console.log(process.env.MONGODB_URL);
 const authRoutes = require("./routes/auth/auth");

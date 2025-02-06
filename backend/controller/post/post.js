@@ -47,6 +47,7 @@ const CreatePost = async (req, res) => {
 
     const newPost = new post({ text, img, user: userid });
     await newPost.save();
+    return res.status(200).json({ message: "Post created successfully" });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Internal Server Error" });

@@ -18,7 +18,7 @@ function AuthReCheck({ children }) {
         { withCredentials: true }
       );
 
-      return response.data; 
+      return response.data;  
     },
     retry: false,
     refetchOnMount: true, 

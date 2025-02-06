@@ -21,7 +21,7 @@ function AuthReCheck({ children }) {
       return response.data; 
     },
     retry: false,
-    refetchOnMount: true,
+    refetchOnMount: true, 
     cacheTime: 0,
     staleTime: 0,
     onSuccess: (data) => {

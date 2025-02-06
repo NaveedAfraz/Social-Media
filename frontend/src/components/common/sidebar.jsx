@@ -32,7 +32,7 @@ const Sidebar = () => {
         }
       );
       return res.data;
-    },
+    }, 
     onSuccess: (data) => {
       console.log("Logout successful");
       console.log(data);

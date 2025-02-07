@@ -34,6 +34,8 @@ const CreatePost = () => {
     },
     onSuccess: (data) => {
       console.log(data);
+      setText("");
+      setImg(null);
     },
     onError: (data) => {
       console.log(data);

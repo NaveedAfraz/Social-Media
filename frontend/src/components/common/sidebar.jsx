@@ -3,11 +3,11 @@ import { MdHomeFilled } from "react-icons/md";
 import { IoNotifications } from "react-icons/io5";
 import { FaUser } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import { BiLogOut } from "react-icons/bi";
+import { BiLogIn, BiLogOut } from "react-icons/bi";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { isAuth } from "../../redux/authSlice";
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -17,6 +17,9 @@ const Sidebar = () => {
     username: "johndoe",
     profileImg: "/avatars/boy1.png",
   };
+  const { userInfo } = useSelector((state) => state.auth);
+  console.log(userInfo);
+
   const queryClient = useQueryClient();
   const {
     isError,
@@ -32,12 +35,14 @@ const Sidebar = () => {
         }
       );
       return res.data;
-    }, 
+    },
+    cacheTime: 0,
+    staleTime: 0,
     onSuccess: (data) => {
       console.log("Logout successful");
       console.log(data);
       if (data.success) {
-        navigate("/login");
+        // navigate("/login");
         queryClient.invalidateQueries({ queryKey: ["authUser"] });
         dispatch(isAuth(false));
       }
@@ -46,9 +51,16 @@ const Sidebar = () => {
       console.log("Logout failed", error);
     },
   });
+  console.log(data);
+
   const handleLogout = () => {
     // alert("Logout");
     logoutMutate();
+  };
+  const handleLogin = (e) => {
+    e.preventDefault(); // Prevent default link behavior
+    console.log("Login navigation triggered");
+    navigate("/login");
   };
   return (
     <div className="md:flex-[2_2_0]  w-80 max-w-52">
@@ -106,10 +118,17 @@ const Sidebar = () => {
                 </p>
                 <p className="text-slate-500 text-sm">@{data?.username}</p>
               </div>
-              <BiLogOut
-                onClick={handleLogout}
-                className="w-5 h-5 cursor-pointer"
-              />
+              {userInfo ? (
+                <BiLogOut
+                  onClick={handleLogout}
+                  className="w-5 h-5 cursor-pointer"
+                />
+              ) : (
+                <BiLogIn
+                  onClick={handleLogin}
+                  className="w-5 h-5 cursor-pointer"
+                ></BiLogIn>
+              )}
             </div>
           </Link>
         )}

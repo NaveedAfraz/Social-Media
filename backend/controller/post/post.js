@@ -233,11 +233,13 @@ const fetchLikedPosts = async (req, res) => {
 
 const fetchfollowingPost = async (req, res) => {
   const userid = req.User._id;
+  console.log("this is user id:", userid);
+  
   if (!userid) return res.status(400).json({ message: "User id is required" });
 
   try {
     const userData = await user.findById(userid);
-    if (!userData) return res.status(400).json({ message: "User not found" });
+    if (!userData) return res.status(404).json({ message: "User not found" });
 
     const following = userData.following;
     // console.log(following);

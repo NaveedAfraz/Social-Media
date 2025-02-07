@@ -24,60 +24,26 @@ function App() {
       console.log("navigated to home");
     }
   }, [userInfo, navigate]);
-
+  const isPublicRoute = ["/login", "/signup"].includes(location.pathname);
   return (
     <div className="flex">
-      {userInfo && <Sidebar />}
+      {!isPublicRoute && <Sidebar />}
       <Routes>
-        {!userInfo && (
-          <>
-            <Route
-              path="/login"
-              element={
-                <AuthReCheck>
-                  {" "}
-                  <Login />{" "}
-                </AuthReCheck>
-              }
-            ></Route>
-            <Route
-              path="/signUp"
-              element={
-                <AuthReCheck>
-                  {" "}
-                  <SignUp />{" "}
-                </AuthReCheck>
-              }
-            ></Route>{" "}
-          </>
-        )}
-        <Route
-          path="/home"
-          element={
-            <AuthReCheck>
-              <Home />
-            </AuthReCheck>
-          }
-        ></Route>
-        <Route
-          path="/notifications"
-          element={
-            <AuthReCheck>
-              <NotificationPage />{" "}
-            </AuthReCheck>
-          }
-        />
-        <Route
-          path="/profile/:username"
-          element={
-            <AuthReCheck>
-              {" "}
-              <ProfilePage />
-            </AuthReCheck>
-          }
-        />
+        {/* <Route element={<Authrecheck/>}> */}
+        <Route path="/login" element={<Login />}></Route>
+        <Route path="/signUp" element={<SignUp />}></Route>
+        {/* </Route> */}
+
+        <Route element={<AuthReCheck />}>
+          <Route path="/home" element={<Home />}></Route>
+          <Route path="/notifications" element={<NotificationPage />} />
+          <Route path="/profile/:username" element={<ProfilePage />} />
+        </Route>
       </Routes>
-      {userInfo && <RightPanel />}
+      {!isPublicRoute && <RightPanel />}
+
+      {/* <Route path="/" element={<Navigate to="/home" replace />} />
+      <Route path="*" element={<Navigate to="/login" replace />} /> */}
     </div>
   );
 }

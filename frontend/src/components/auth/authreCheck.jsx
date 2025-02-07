@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import { Navigate } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { isAuth, Logout } from "../../redux/authSlice";
 
@@ -17,11 +17,10 @@ function AuthReCheck({ children }) {
         {},
         { withCredentials: true }
       );
-
-      return response.data;  
+      return response.data;
     },
     retry: false,
-    refetchOnMount: true, 
+    refetchOnMount: true,
     cacheTime: 0,
     staleTime: 0,
     onSuccess: (data) => {
@@ -39,7 +38,7 @@ function AuthReCheck({ children }) {
       dispatch(isAuth(data));
     }
   }, [data]);
-  
+
   if (isLoading) {
     return <div>Loading...</div>;
   }
@@ -47,8 +46,11 @@ function AuthReCheck({ children }) {
   if (isError || !data?.success) {
     console.log("AuthReCheck failed");
   }
-
-  return <>{children}</>;
+  return (
+    <>
+      <Outlet />
+    </>
+  );
 }
 
 export default AuthReCheck;

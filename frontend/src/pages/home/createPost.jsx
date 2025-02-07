@@ -2,18 +2,19 @@ import { CiImageOn } from "react-icons/ci";
 import { BsEmojiSmileFill } from "react-icons/bs";
 import { useRef, useState } from "react";
 import { IoCloseSharp } from "react-icons/io5";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
+import { useDispatch } from "react-redux";
 const CreatePost = () => {
   const [text, setText] = useState("");
   const [img, setImg] = useState(null);
-
+  // const dispatch = useDispatch();
   const imgRef = useRef(null);
 
   const data = {
     profileImg: "/avatars/boy1.png",
   };
-
+  const queryClient = useQueryClient();
   const { isError, isPending, mutate } = useMutation({
     mutationFn: async () => {
       console.log("text", text);
@@ -36,6 +37,7 @@ const CreatePost = () => {
       console.log(data);
       setText("");
       setImg(null);
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
     },
     onError: (data) => {
       console.log(data);

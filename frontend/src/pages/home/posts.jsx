@@ -4,10 +4,31 @@ import Post from "../../components/home/post";
 import PostSkeleton from "../../components/skeleton/postSkeleton";
 import { useEffect } from "react";
 import axios from "axios";
+import { useSelector } from "react-redux";
 
 const Posts = ({ feedType }) => {
   console.log(feedType);
+  const { userInfo } = useSelector((state) => state.auth);
+  console.log(userInfo);
 
+  let url;
+  switch (feedType) {
+    case "following":
+      url = "http://localhost:3006/api/posts/fetchfollowingPost";
+      break;
+    case "all":
+      url = "http://localhost:3006/api/posts/fetchAllPosts";
+      break;
+    case "posts":
+      url = `http://localhost:3006/api/posts/fetchUserPosts/${userInfo?._id}`;
+      break;
+    case "likes":
+      url = `http://localhost:3006/api/posts/fetchLikedPosts/${userInfo?._id}`;
+      break;
+    default:
+      url = "http://localhost:3006/api/posts/fetchAllPosts";
+  }
+  console.log(url);
   const {
     isLoading,
     data: POSTS,
@@ -18,18 +39,22 @@ const Posts = ({ feedType }) => {
     queryKey: ["posts"],
     queryFn: async () => {
       try {
-        const url =
-          feedType === "following"
-            ? "http://localhost:3006/api/posts/fetchfollowingPost"
-            : "http://localhost:3006/api/posts/fetchAllPosts";
+        // const url =
+        //   feedType === "following"
+        //     ? "http://localhost:3006/api/posts/fetchfollowingPost"
+        //     : "http://localhost:3006/api/posts/fetchAllPosts";
 
         const response = await axios.get(url, { withCredentials: true });
+        console.log(response.data);
+
         return response.data;
       } catch (error) {
-        console.error("Fetch error:", error.response?.data || error.message);
+        console.error("Fetch error: ", error.response?.data || error.message);
         throw error;
       }
     },
+    retry: 2,
+    retryDelay: 100,
     onSuccess: (data) => {
       console.log(data);
     },
@@ -54,12 +79,20 @@ const Posts = ({ feedType }) => {
       {!isLoading && POSTS?.length === 0 && (
         <p className="text-center my-4">No posts in this tab. Switch 👻</p>
       )}
-      {!isLoading && POSTS?.length > 0 && POSTS && (
+      {console.log(POSTS)}
+      {!isLoading && !isError && POSTS?.length > 0 && POSTS && (
         <div>
           {POSTS.map((post) => (
-            <Post key={post._id} post={post} />
+            <P ost key={post._id} post={post} />
           ))}
         </div>
+      )}
+      {isError && (
+        <p className="text-center my-4 text-red-500">
+          {(error.response?.data?.message || "Please Login in ")||
+            error.message ||
+            "An error occurred"}
+        </p>
       )}
     </>
   );

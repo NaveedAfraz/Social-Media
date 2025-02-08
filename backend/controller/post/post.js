@@ -3,7 +3,6 @@ const post = require("../../models/post");
 const cloudinary = require("cloudinary").v2;
 const Notification = require("../../models/nodification");
 const user = require("../../models/userSchema");
-
 const fetchAllPosts = async (req, res) => {
   try {
     const posts = await post
@@ -153,7 +152,7 @@ const likeUnlikePost = async (req, res) => {
     console.log(Post.likes);
 
     if (Post.likes.includes(userid)) {
-      const postLike = await post.findByIdAndUpdate(postid, {
+      const postUnLike = await post.findByIdAndUpdate(postid, {
         $pull: { likes: userid },
       });
       const notification = new Notification({
@@ -164,18 +163,21 @@ const likeUnlikePost = async (req, res) => {
       // console.log("post unlike before appending:", postLike);
       // console.log("unlike id is here", USER.likedPosts[postLike._id]);
 
-      const likedPost = await user.findByIdAndUpdate(
+      const unlikePost = await user.findByIdAndUpdate(
         userid,
         {
           $pull: { likedPosts: postid },
         },
         { new: true }
       );
-      console.log("this is liked post:", likedPost);
+      // console.log("this is liked post:", likedPost);
 
+      const updatedPost = await post.findById(postid);
       await notification.save();
 
-      return res.status(200).json({ message: "Post unliked successfully" });
+      return res
+        .status(200)
+        .json({ message: "Post unliked successfully", data: updatedPost });
     } else {
       const postLike = await post.findByIdAndUpdate(
         postid,
@@ -184,20 +186,24 @@ const likeUnlikePost = async (req, res) => {
         },
         { new: true }
       );
-      console.log("post like before appending:", postLike);
+      // console.log("post like before appending:", postLike);
       const likedPost = await user.findByIdAndUpdate(userid, {
         $push: { likedPosts: postLike._id },
       });
-      console.log("this is liked post:", likedPost);
+      // console.log("this is liked post:", likedPost);
       const notification = new Notification({
         senderId: userid,
         receiverId: Post.user._id,
         message: `${USER.username} liked your post`,
       });
 
+      const updatedPost = await post.findById(postid);
+
       await notification.save();
 
-      return res.status(200).json({ message: "Post liked successfully" });
+      return res
+        .status(200)
+        .json({ message: "Post liked successfully", data: updatedPost });
     }
   } catch (error) {
     console.log(error);
@@ -222,9 +228,7 @@ const fetchLikedPosts = async (req, res) => {
     if (!likedposts)
       return res.status(400).json({ message: "No liked posts found" });
 
-    return res
-      .status(200)
-      .json({ message: "Liked posts fetched successfully", likedposts });
+    return res.status(200).json(likedposts);
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Internal Server Error" });
@@ -233,8 +237,8 @@ const fetchLikedPosts = async (req, res) => {
 
 const fetchfollowingPost = async (req, res) => {
   const userid = req.User._id;
-  console.log("this is user id:", userid);
-  
+  // console.log("this is user id:", userid);
+
   if (!userid) return res.status(400).json({ message: "User id is required" });
 
   try {
@@ -246,18 +250,20 @@ const fetchfollowingPost = async (req, res) => {
 
     if (following.length == 0)
       return res.status(400).json({ message: "No following found" });
+    const posts = await post.find({ user: userid });
+    console.log("posts:", posts); // Check if this is an array of Mongoose documents
 
-    const followingPosts = await post.find(
-      { user: { $in: following } }.populate("user").populate("comments")
-    );
+    const followingPosts = await post
+      .find({ user: { $in: following } }) // ✅ Corrected query syntax
+      .populate("user")
+      .populate("comments.user"); // ✅ Populate nested user in comments
+
     console.log(followingPosts);
+
     if (!followingPosts)
       return res.status(400).json({ message: "No posts found" });
 
-    return res.status(200).json({
-      message: "Following posts fetched successfully",
-      followingPosts,
-    });
+    return res.status(200).json(followingPosts);
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Internal Server Error" });
@@ -265,11 +271,18 @@ const fetchfollowingPost = async (req, res) => {
 };
 const fetchUserPosts = async (req, res) => {
   const userid = req.params.id;
+  const { id } = req.params;
+  // console.log("this is user id:", userid);
+  // console.log("this is user id:", id);
+
   if (!userid) return res.status(400).json({ message: "User id is required" });
   try {
     const userdata = await user.findById(userid);
+    //console.log("this is user data:", userdata);
 
-    if (!userdata) return res.status(400).json({ message: "User not found" });
+    if (!userdata) {
+      return res.status(400).json({ message: "User not found" });
+    }
 
     const userposts = await post
       .find({ user: userid })
@@ -284,9 +297,7 @@ const fetchUserPosts = async (req, res) => {
       });
 
     if (!userposts) return res.status(400).json({ message: "No posts found" });
-    return res
-      .status(200)
-      .json({ message: "User posts fetched successfully", userposts });
+    return res.status(200).json(userposts);
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Internal Server Error" });

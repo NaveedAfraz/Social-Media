@@ -45,6 +45,86 @@ const Post = ({ post }) => {
     },
   });
 
+  const {
+    isError: likeError,
+    isPending: likePending,
+    data: likeData,
+    mutate: likeMutate,
+  } = useMutation({
+    mutationFn: async ({ id }) => {
+      try {
+        const res = await axios.post(
+          `http://localhost:3006/api/posts/likes/${id}`,
+          {},
+          { withCredentials: true }
+        );
+        if (res.status === 401) {
+          throw new Error("Please login to like posts");
+        }
+        console.log(res);
+        return res.data;
+      } catch (error) {
+        console.log(error);
+        throw new Error("Please login to like posts");
+      }
+    },
+    onError: (error) => {
+      console.log(error);
+    },
+    onSuccess: (resData) => {
+      console.log("success");
+      // queryClient.invalidateQueries({ queryKey: ["posts"] });
+      queryClient.setQueryData(["posts"], (oldData) => {
+        if (!oldData) return [];
+        return oldData.map((p) => {
+          console.log("Response Data:", resData);
+          console.log("Likes in Response:", resData?.data?.likes);
+
+          if (post._id === p._id) {
+            return { ...p, likes: resData.data.likes };
+          }
+          return p;
+        });
+      });
+    },
+  });
+
+  const {
+    mutate: Addcomment,
+    isError: commentError,
+    isPending: commentPending,
+    data: commentData,
+  } = useMutation({
+    mutationFn: async ({ id }) => {
+      console.log(comment);
+
+      try {
+        const commentRes = await axios.post(
+          `http://localhost:3006/api/posts/comment/${id}`,
+          {
+            text: comment,
+          },
+          {
+            withCredentials: true,
+          }
+        );
+        console.log(commentRes);
+        return commentRes.data;
+      } catch (error) {
+        console.log(error);
+        throw comment?.data?.message || error;
+      }
+    },
+    onError: (error) => {
+      console.log(error);
+      // add toast here
+    },
+    onSuccess: (data) => {
+      console.log("success");
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+    },
+  });
+
   const handleDeletePost = (post) => {
     console.log(post._id);
     mutate({ id: post._id });
@@ -52,9 +132,14 @@ const Post = ({ post }) => {
 
   const handlePostComment = (e) => {
     e.preventDefault();
+    console.log("comment");
+    Addcomment({ id: post._id });
   };
 
-  const handleLikePost = () => {};
+  const handleLikePost = () => {
+    console.log("like");
+    likeMutate({ id: post._id });
+  };
 
   return (
     <>
@@ -197,7 +282,8 @@ const Post = ({ post }) => {
                     isLiked ? "text-pink-500" : ""
                   }`}
                 >
-                  {post.likes.length}
+                  {console.log(post.likes.length)}
+                  {post.likes?.length ?? 0}
                 </span>
               </div>
             </div>

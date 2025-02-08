@@ -36,10 +36,7 @@ const FetchNodification = async (req, res) => {
       { isRead: true }
     );
 
-    return res.status(200).json({
-      message: "NODIFICATION FETCHED SUCCESSFULLY",
-      nodification,
-    });
+    return res.status(200).json(nodification);
   } catch (error) {
     console.log("Error details:", error);
     return res.status(500).json({ message: "INTERNAL SERVER ERROR" });
@@ -49,7 +46,7 @@ const FetchNodification = async (req, res) => {
 const deleteNodification = async (req, res) => {
   try {
     const userid = req.User._id;
-
+    console.log("userid is this", userid);
     if (!userid)
       return res.status(400).json({ message: "USER ID IS REQUIRED" });
 
@@ -72,6 +69,8 @@ const deleteNodification = async (req, res) => {
 
 const deleteNodificationID = async (req, res) => {
   const userid = req.User._id;
+  console.log("userid is this", userid);
+
   if (!userid) return res.status(400).json({ message: "USER ID IS REQUIRED" });
 
   const deleteID = req.params.id;

@@ -5,14 +5,21 @@ const bcrypt = require("bcryptjs");
 
 const getUserProfile = async (req, res) => {
   const { username } = req.params;
+  console.log("username is this ", username);
+
   try {
-    const user = await user.findone({ username: username }).select("-password");
-    if (!user) {
+    const UserDeatils = await user
+      .findOne({ username: username })
+      .select("-password");
+    console.log("user is this ", UserDeatils);
+
+    if (!UserDeatils) {
       return res.status(404).json({ message: "User not found" });
     }
-    res.status(200).json({ message: "User found", User: user });
+    return res.status(200).json({ message: "User found", User: UserDeatils });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.log(error);
+    return res.status(500).json({ message: error.message });
   }
 };
 
@@ -24,8 +31,7 @@ const followUnfollowUserProfile = async (req, res) => {
     return res.status(400).json({ message: "User ID is required" });
   }
   try {
-    const userid = req.User._id; // logged in user id
-    // console.log(userid, "userid is this ");
+    const userid = req.User._id;
     const userToModify = await user.findById(id); // user to follow/unfollow
     const currentuser = await user.findById(userid); // logged in user
     // console.log(userToModify, "userto modiy is this ");
@@ -118,7 +124,7 @@ const updateUserProfile = async (req, res) => {
 
   console.log(coverImg, profileImg);
   console.log(username, email, bio);
-  if (!username || !email || !bio ) {
+  if (!username || !email || !bio) {
     console.log("some of the details to update is missing");
     return res
       .status(400)

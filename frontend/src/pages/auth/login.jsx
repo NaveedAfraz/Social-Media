@@ -94,8 +94,8 @@ function LoginPage() {
               name="password"
               required
               placeholder="Password"
-              minLength="8"
-              pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
+              minLength="1"
+              // pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
               title="Must be more than 8 characters, including number, lowercase letter, uppercase letter"
               className="w-full bg-black text-white border-2 border-gray-700 rounded-3xl pl-12 py-3 focus:outline-none caret-transparent"
               value={formdata.password}

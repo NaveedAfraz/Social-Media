@@ -57,7 +57,7 @@ const followUnfollowUserProfile = async (req, res) => {
       const notification = new Nodification({
         senderId: userid,
         receiverId: id,
-        message: `${currentuser.username} unfollowed you`,
+        message: `has unfollowed you`,
       });
       await notification.save();
       return res
@@ -72,7 +72,7 @@ const followUnfollowUserProfile = async (req, res) => {
       const notification = new Nodification({
         senderId: userid,
         receiverId: id,
-        message: `${currentuser.username} started following you`,
+        message: ` has started following you`,
       });
       await notification.save();
       return res
@@ -108,7 +108,7 @@ const getSuggestedUsers = async (req, res) => {
     const filtering = suggestedUsers.filter((user) => {
       return !currentuser.following.includes(user._id);
     });
-    const suggested = filtering.slice(0, 5);
+    const suggested = filtering.slice(0, 10);
     res.status(200).json({ suggested });
   } catch (error) {
     console.log(error.message);

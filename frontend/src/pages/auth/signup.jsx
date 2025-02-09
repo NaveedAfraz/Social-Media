@@ -109,8 +109,8 @@ function SignupPage() {
               name="password"
               required
               placeholder="Password"
-              minLength="8"
-              pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
+              minLength="1"
+            //  pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
               title="Must be at least 8 characters, including a number, a lowercase letter, and an uppercase letter"
               className="w-full bg-black text-white pl-10 py-2 border-2  border-gray-700 rounded-3xl  focus:outline-none"
               value={formData.password}

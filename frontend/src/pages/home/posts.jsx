@@ -9,13 +9,13 @@ import { useEffect } from "react";
 const Posts = ({ feedType }) => {
   const { userInfo } = useSelector((state) => state.auth);
   const location = useLocation();
-  const username = location.pathname.split("/").pop();
-  
-  console.log(username);
-  
+  const ProfileUsername = location.pathname.split("/").pop();
+  // console.log(username);
+
+  // const { username } = userInfo;
   // Compute error immediately based on feedType, userInfo, and username.
   const computedError =
-    feedType === "likes" && userInfo?.username !== username
+    feedType === "likes" && userInfo?.username !== ProfileUsername
       ? "Cannot fetch liked posts for this user at the moment"
       : "";
 
@@ -29,11 +29,10 @@ const Posts = ({ feedType }) => {
       url = "http://localhost:3006/api/posts/fetchAllPosts";
       break;
     case "posts":
-      url = `http://localhost:3006/api/posts/fetchUserPosts/${username}`;
+      url = `http://localhost:3006/api/posts/fetchUserPosts/${userInfo?.username}`;
       break;
     case "likes":
-      if (feedType === "likes" && userInfo?.username === username) {
-        console.log(userInfo);
+      if (feedType === "likes" && userInfo?.username === ProfileUsername) {
         url = `http://localhost:3006/api/posts/fetchLikedPosts/${userInfo?._id}`;
       } else {
         url = undefined; // Not a valid URL when error condition holds.
@@ -50,13 +49,13 @@ const Posts = ({ feedType }) => {
     error,
     refetch,
   } = useQuery({
-    queryKey: ["posts"],
+    queryKey: ["posts", feedType, ProfileUsername],
     queryFn: async () => {
-      // Immediately throw an error if our computed error exists.
+      console.log("loading is ", isLoading);
       if (computedError) {
         throw new Error(computedError);
       }
-      // If no valid URL exists, return an empty array.
+
       if (!url) {
         return [];
       }
@@ -65,23 +64,22 @@ const Posts = ({ feedType }) => {
 
       return response.data;
     },
-    // Disable query execution if there is a computed error.
+
     enabled: computedError === "",
     retry: 2,
     retryDelay: 100,
   });
 
-  // Optionally refetch if location or feedType changes and there's no error.
   useEffect(() => {
     if (computedError === "") {
       refetch();
       console.log("Refetching posts...");
     }
   }, [location.pathname, feedType, computedError, refetch]);
+  console.log("loading is ", isLoading);
 
   return (
     <>
-      {/* Display the computed error immediately if it exists */}
       {computedError && (
         <div className="text-center my-4 text-red-500">{computedError}</div>
       )}
@@ -101,7 +99,7 @@ const Posts = ({ feedType }) => {
       {!isLoading && !isError && POSTS?.length > 0 && (
         <div>
           {POSTS.map((post) => (
-            <Post key={post._id} post={post} />
+            <Post key={post._id} post={post} feedType={feedType} ProfileUsername={ProfileUsername} />
           ))}
         </div>
       )}

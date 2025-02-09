@@ -9,7 +9,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { useSelector } from "react-redux";
 
-const Post = ({ post }) => {
+const Post = ({ post , ProfileUsername ,feedType}) => {
   const [comment, setComment] = useState("");
   const { userInfo } = useSelector((state) => state.auth);
   const postOwner = post?.user;
@@ -75,18 +75,21 @@ const Post = ({ post }) => {
     onSuccess: (resData) => {
       console.log("success");
       // queryClient.invalidateQueries({ queryKey: ["posts"] });
-      queryClient.setQueryData(["posts"], (oldData) => {
-        if (!oldData) return [];
-        return oldData.map((p) => {
-          console.log("Response Data:", resData);
-          console.log("Likes in Response:", resData?.data?.likes);
+      queryClient.setQueryData(
+        ["posts", feedType, ProfileUsername],
+        (oldData) => {
+          if (!oldData) return [];
+          return oldData.map((p) => {
+            console.log("Response Data:", resData);
+            console.log("Likes in Response:", resData?.data?.likes);
 
-          if (post._id === p._id) {
-            return { ...p, likes: resData.data.likes };
-          }
-          return p;
-        });
-      });
+            if (post._id === p._id) {
+              return { ...p, likes: resData.data.likes };
+            }
+            return p;
+          });
+        }
+      );
     },
   });
 

@@ -63,8 +63,8 @@ const Sidebar = () => {
   };
   console.log(userInfo);
   return (
-    <div className="md:flex-[2_2_0]  w-80 max-w-52">
-      <div className="sticky top-0 left-0 h-screen flex flex-col border-r border-gray-700 w-20 md:w-full">
+    <div className="md:flex-[2_2_0]  max-w-64">
+      <div className="sticky top-0 left-0 p-3 h-screen flex flex-col border-r border-gray-700 w-20 md:w-full">
         <Link to="/home" className="flex justify-center md:justify-start">
           <img
             src={XLogo}

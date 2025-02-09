@@ -1,7 +1,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { useState } from "react";
-import { useSelector } from "react-redux";
+import { BiCloset } from "react-icons/bi";
+import { IoClose } from "react-icons/io5";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { isAuth } from "../../redux/authSlice";
 
 const EditProfileModal = ({ user }) => {
   const [formData, setFormData] = useState({
@@ -17,12 +21,13 @@ const EditProfileModal = ({ user }) => {
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
-
+  const dispatch = useDispatch();
   const queryClient = useQueryClient();
-
+  const userInfo = useSelector((state) => state.auth.user);
   const {
     isError,
     isSuccess,
+    isLoading: isUpdating,
     mutate: updateProfile,
   } = useMutation({
     mutationFn: async () => {
@@ -49,15 +54,26 @@ const EditProfileModal = ({ user }) => {
     },
     onSuccess: (data) => {
       console.log(data);
-      queryClient.invalidateQueries(["userProfile"]);
-      queryClient.invalidateQueries({ queryKey: ["authUser"] });
-			setFormData({})
+
+      queryClient
+        .invalidateQueries(["userProfile"])
+        .then(() => {
+          console.log("Successfully invalidated 'userProfile' queries.");
+        })
+        .catch((err) => {
+          console.error("Error invalidating 'userProfile' queries:", err);
+        });
+
+      setFormData({});
+      // naviagte(`/profile/${formData.username}`);
+      dispatch(isAuth(data));
     },
     onError: (error) => {
       console.log(error);
     },
   });
 
+  const naviagte = useNavigate();
   const handleUpdate = () => {
     updateProfile();
   };
@@ -73,12 +89,20 @@ const EditProfileModal = ({ user }) => {
       </button>
       <dialog id="edit_profile_modal" className="modal">
         <div className="modal-box border rounded-md border-gray-700 shadow-md">
-          <h3 className="font-bold text-lg my-3">Update Profile</h3>
+          <div className="flex justify-between items-center">
+            <h3 className="font-bold text-lg my-3">Update Profile</h3>
+            <IoClose
+              onClick={() =>
+                document.getElementById("edit_profile_modal").close()
+              }
+              className="cursor-pointer *:hover:text-red-500 *:hover:scale-110 transition-all duration-300 ease-in-out text-xl "
+            ></IoClose>
+          </div>
+
           <form
             className="flex flex-col gap-4"
             onSubmit={(e) => {
               e.preventDefault();
-              alert("Profile updated successfully");
             }}
           >
             <div className="flex flex-wrap gap-2">
@@ -146,7 +170,7 @@ const EditProfileModal = ({ user }) => {
               onClick={() => handleUpdate()}
               className="btn btn-primary rounded-full btn-sm text-white"
             >
-              Update
+              {isUpdating ? "Updating" : "Update Profile"}
             </button>
           </form>
         </div>

@@ -12,6 +12,7 @@ import { MdEdit } from "react-icons/md";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { useSelector } from "react-redux";
+import useFollow from "../../hooks/followUnfollow";
 
 const ProfilePage = () => {
   const [coverImg, setCoverImg] = useState(null);
@@ -22,11 +23,7 @@ const ProfilePage = () => {
   const profileImgRef = useRef(null);
 
   const { userInfo } = useSelector((state) => state.auth);
-  // //console.log(userInfo);
-  // const { username } = useParams();
-  const location = useParams();
-  const username = location.username;
-  console.log(username);
+  const location = useLocation();
 
   const {
     data: user,
@@ -36,9 +33,12 @@ const ProfilePage = () => {
   } = useQuery({
     queryKey: ["userProfile"],
     queryFn: async () => {
+      console.log("refetching3");
       try {
         const res = await axios.get(
-          `http://localhost:3006/api/user/getUser/${username}`,
+          `http://localhost:3006/api/user/getUser/${
+            location.pathname.split("/")[2]
+          }`,
           {
             withCredentials: true,
           }
@@ -49,16 +49,17 @@ const ProfilePage = () => {
         throw new Error(error);
       }
     },
-    retry: 2,
+    retry: 4,
   });
 
   const queryClient = useQueryClient();
+
   useEffect(() => {
     queryClient.invalidateQueries(["userProfile"]);
-    queryClient.invalidateQueries({ queryKey: ['authUser'] }),
+
     console.log("refetching2");
     refetch();
-  }, [username]);
+  }, [location.pathname]);
 
   const isMyProfile = user?._id === userInfo?._id;
 
@@ -78,6 +79,7 @@ const ProfilePage = () => {
   const {
     isError,
     isSuccess,
+    isLoading: isUpdating,
     mutate: updateProfile,
   } = useMutation({
     mutationFn: async () => {
@@ -111,12 +113,16 @@ const ProfilePage = () => {
     },
   });
 
+  //console.log(user?.following?.length);
+
   const handleProfileUpdate = () => {
     console.log("updating profile");
-
     updateProfile();
   };
 
+  const amIFollowing = user?.followers?.includes(userInfo?._id);
+
+  const { follow, isPending } = useFollow();
   return (
     <>
       <div className="flex-[4_4_0]  border-r border-gray-700 min-h-screen ">
@@ -128,8 +134,8 @@ const ProfilePage = () => {
         <div className="flex flex-col">
           {!isLoading && user && (
             <>
-              <div className="flex gap-10 px-4 py-2 items-center">
-                <Link to="/">
+              <div className="flex gap-10 px-4 py-4 items-center">
+                <Link to="/home">
                   <FaArrowLeft className="w-4 h-4" />
                 </Link>
                 <div className="flex flex-col">
@@ -143,7 +149,7 @@ const ProfilePage = () => {
               <div className="relative group/cover">
                 <img
                   src={coverImg || user?.coverImg || "/cover.png"}
-                  className="h-52 w-full object-cover"
+                  className="h-64 w-full object-cover"
                   alt="cover image"
                 />
                 {isMyProfile && (
@@ -169,7 +175,7 @@ const ProfilePage = () => {
                 />
                 {/* USER AVATAR */}
                 <div className="avatar absolute -bottom-16 left-4">
-                  <div className="w-32 rounded-full relative group/avatar">
+                  <div className="w-40 rounded-full relative group/avatar">
                     <img
                       src={
                         profileImg ||
@@ -193,9 +199,11 @@ const ProfilePage = () => {
                 {!isMyProfile && (
                   <button
                     className="btn btn-outline rounded-full btn-sm"
-                    onClick={() => alert("Followed successfully")}
+                    onClick={() => follow(user?._id)}
                   >
-                    Follow
+                    {isPending && "Loading..."}
+                    {!isPending && amIFollowing && "Unfollow"}
+                    {!isPending && !amIFollowing && "Follow"}
                   </button>
                 )}
                 {(coverImg || profileImg) && (
@@ -203,7 +211,7 @@ const ProfilePage = () => {
                     className="btn btn-primary rounded-full btn-sm text-white px-4 ml-2"
                     onClick={() => handleProfileUpdate()}
                   >
-                    Update
+                    {isUpdating ? "Updating..." : "Update"}
                   </button>
                 )}
               </div>

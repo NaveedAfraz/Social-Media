@@ -159,7 +159,7 @@ const likeUnlikePost = async (req, res) => {
       const notification = new Notification({
         senderId: userid,
         receiverId: Post.user._id,
-        message: `${USER.username} unliked your post`,
+        message: `unliked your post`,
       });
       // console.log("post unlike before appending:", postLike);
       // console.log("unlike id is here", USER.likedPosts[postLike._id]);
@@ -195,7 +195,7 @@ const likeUnlikePost = async (req, res) => {
       const notification = new Notification({
         senderId: userid,
         receiverId: Post.user._id,
-        message: `${USER.username} liked your post`,
+        message: `liked your post`,
       });
 
       const updatedPost = await post.findById(postid);
@@ -253,14 +253,14 @@ const fetchfollowingPost = async (req, res) => {
     if (following.length == 0)
       return res.status(400).json({ message: "No following found" });
     const posts = await post.find({ user: userid });
-   // console.log("posts:", posts); // Check if this is an array of Mongoose documents
+    // console.log("posts:", posts); // Check if this is an array of Mongoose documents
 
     const followingPosts = await post
       .find({ user: { $in: following } }) // ✅ Corrected query syntax
       .populate("user")
       .populate("comments.user"); // ✅ Populate nested user in comments
 
-   // console.log(followingPosts);
+    // console.log(followingPosts);
 
     if (!followingPosts)
       return res.status(400).json({ message: "No posts found" });

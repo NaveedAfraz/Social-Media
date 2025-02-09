@@ -80,6 +80,8 @@ const NotificationPage = () => {
     console.log(id);
     deleteNotification({ nodificationOneID: id });
   };
+  console.log(notifications);
+
   return (
     <>
       <div className="flex-[4_4_0] border-l border-r border-gray-700 min-h-screen">

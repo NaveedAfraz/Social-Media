@@ -1,10 +1,11 @@
 import { Link } from "react-router-dom";
 import RightPanelSkeleton from "../skeleton/RigthSkeleton";
-import { useQuery } from "@tanstack/react-query";
+import { QueryClient, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import useFollow from "../../hooks/followUnfollow";
 
 const RightPanel = () => {
+  const queryClient = useQueryClient();
   const { isLoading, data: suggestedUsers } = useQuery({
     queryKey: ["suggestedUsers"],
     queryFn: async () => {
@@ -14,24 +15,31 @@ const RightPanel = () => {
           withCredentials: true,
         }
       );
-      console.log(res);
-      return res.data.suggested;
+
+      // console.log("API Response:", res);
+
+      return res.data.suggested; // Ensure this matches your API response structure
     },
     onSuccess: (data) => {
-      console.log(data);
+      console.log("onSuccess triggered with data:", data);
+
+      queryClient.invalidateQueries(["userProfile"]).then(() => {
+        console.log("Invalidated userProfile");
+      });
     },
     onError: (error) => {
-      console.log(error);
+      console.error("Error fetching suggested users:", error);
     },
   });
-  const { follow, isPending } = useFollow();
 
-  if (suggestedUsers?.length === 0) return <div className="md:w-64 w-0"></div>;
+  const { follow, isPending } = useFollow();
 
   return (
     <div className="hidden lg:block my-4 mx-2">
       <div className="bg-[#16181C] p-4 rounded-md sticky top-2">
-        <p className="font-bold">Who to follow</p>
+        {suggestedUsers?.length !== 0 && (
+          <p className="font-bold text-center pb-5">Suggested Users for you</p>
+        )}
         <div className="flex flex-col gap-4">
           {/* item */}
 
@@ -78,6 +86,11 @@ const RightPanel = () => {
                 </div>
               </Link>
             ))}
+          {suggestedUsers?.length === 0 && (
+            <div className="md:w-64 w-0 text-center h-7 font-bold">
+              No suggested users for you
+            </div>
+          )}
         </div>
       </div>
     </div>

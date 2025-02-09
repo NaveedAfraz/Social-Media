@@ -18,7 +18,7 @@ router.get("/fetchfollowingPost", protectedRoute, fetchfollowingPost);
 
 
 
-router.get("/fetchUserPosts/:id", protectedRoute, fetchUserPosts);
+router.get("/fetchUserPosts/:username", protectedRoute, fetchUserPosts);
 router.get("/fetchLikedPosts/:id", protectedRoute, fetchLikedPosts);
 
 

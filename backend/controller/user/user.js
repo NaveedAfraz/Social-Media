@@ -124,12 +124,12 @@ const updateUserProfile = async (req, res) => {
 
   console.log(coverImg, profileImg);
   console.log(username, email, bio);
-  if (!username || !email || !bio) {
-    console.log("some of the details to update is missing");
-    return res
-      .status(400)
-      .json({ message: "some of the details to update is missing" });
-  }
+  // if (!username || !email || !bio) {
+  //   console.log("some of the details to update is missing");
+  //   return res
+  //     .status(400)
+  //     .json({ message: "some of the details to update is missing" });
+  // }
   const userid = req.User._id;
   try {
     const data = await user.findById(userid);
@@ -139,28 +139,31 @@ const updateUserProfile = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const check = await bcrypt.compare(currentPassword, data.password);
-    if (!check) {
-      console.log(check);
+    let hashedPassword;
+    if (currentPassword && newPassword) {
+      const check = await bcrypt.compare(currentPassword, data.password);
+      if (!check) {
+        console.log(check);
 
-      return res
-        .status(400)
-        .json({ message: "Current password is incorrect didn't match" });
+        return res
+          .status(400)
+          .json({ message: "Current password is incorrect didn't match" });
+      }
+
+      if (
+        (currentPassword && !newPassword) ||
+        (newPassword && !currentPassword)
+      ) {
+        console.log("current password and new password are required");
+        return res
+          .status(400)
+          .json({ message: "current password and new password are required" });
+      }
+
+      hashedPassword = await bcrypt.hash(newPassword, 10);
+      console.log("Cloudinary API Key:", process.env.CLOUDINARY_API_KEY);
+      console.log("Cloudinary API Secret: ", process.env.CLOUDINARY_API_SECRET);
     }
-
-    if (
-      (currentPassword && !newPassword) ||
-      (newPassword && !currentPassword)
-    ) {
-      console.log("current password and new password are required");
-      return res
-        .status(400)
-        .json({ message: "current password and new password are required" });
-    }
-
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
-    console.log("Cloudinary API Key:", process.env.CLOUDINARY_API_KEY);
-    console.log("Cloudinary API Secret: ", process.env.CLOUDINARY_API_SECRET);
 
     if (profileImg) {
       if (data.profileImg) {
@@ -169,25 +172,24 @@ const updateUserProfile = async (req, res) => {
       const updatedImg = await cloudinary.uploader.upload(profileImg);
       profileImg = updatedImg.secure_url;
       console.log("updated img is :", updatedImg);
-
-      if (coverImg) {
-        if (data.coverImg) {
-          await cloudinary.uploader.destroy(data.coverImg);
-        }
-        const uploadedCoverImg = await cloudinary.uploader.upload(coverImg);
-        coverImg = uploadedCoverImg.secure_url;
+    }
+    if (coverImg) {
+      if (data.coverImg) {
+        await cloudinary.uploader.destroy(data.coverImg);
       }
+      const uploadedCoverImg = await cloudinary.uploader.upload(coverImg);
+      coverImg = uploadedCoverImg.secure_url;
     }
 
     const updatedUser = await user.findByIdAndUpdate(
       userid,
       {
-        username: username,
-        email: email,
-        password: hashedPassword,
-        coverImg: coverImg,
-        profileImg: profileImg,
-        bio: bio,
+        username: username || data.username,
+        email: email || data.email,
+        password: hashedPassword || data.password,
+        coverImg: coverImg || data.coverImg,
+        profileImg: profileImg || data.profileImg,
+        bio: bio || data.bio,
       },
       { new: true }
     );

@@ -134,6 +134,7 @@ const commentPost = async (req, res) => {
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
 const likeUnlikePost = async (req, res) => {
   try {
     const userid = req.User._id;
@@ -215,6 +216,7 @@ const fetchLikedPosts = async (req, res) => {
   const userid = req.params.id;
 
   if (!userid) return res.status(400).json({ message: "User id is required" });
+  console.log("this is user id:", userid);
 
   try {
     const userData = await user.findById(userid);
@@ -251,14 +253,14 @@ const fetchfollowingPost = async (req, res) => {
     if (following.length == 0)
       return res.status(400).json({ message: "No following found" });
     const posts = await post.find({ user: userid });
-    console.log("posts:", posts); // Check if this is an array of Mongoose documents
+   // console.log("posts:", posts); // Check if this is an array of Mongoose documents
 
     const followingPosts = await post
       .find({ user: { $in: following } }) // ✅ Corrected query syntax
       .populate("user")
       .populate("comments.user"); // ✅ Populate nested user in comments
 
-    console.log(followingPosts);
+   // console.log(followingPosts);
 
     if (!followingPosts)
       return res.status(400).json({ message: "No posts found" });
@@ -269,38 +271,30 @@ const fetchfollowingPost = async (req, res) => {
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
 const fetchUserPosts = async (req, res) => {
-  const userid = req.params.id;
-  const { id } = req.params;
-  // console.log("this is user id:", userid);
-  // console.log("this is user id:", id);
-
-  if (!userid) return res.status(400).json({ message: "User id is required" });
   try {
-    const userdata = await user.findById(userid);
-    //console.log("this is user data:", userdata);
+    const { username } = req.params;
 
-    if (!userdata) {
-      return res.status(400).json({ message: "User not found" });
-    }
+    const User = await user.findOne({ username });
+    if (!User) return res.status(404).json({ error: "User not found" });
+    console.log(User._id);
 
-    const userposts = await post
-      .find({ user: userid })
+    const posts = await post
+      .find({ user: User._id })
       .sort({ createdAt: -1 })
       .populate({
         path: "user",
         select: "-password",
       })
       .populate({
-        path: "comments",
+        path: "comments.user",
         select: "-password",
       });
-
-    if (!userposts) return res.status(400).json({ message: "No posts found" });
-    return res.status(200).json(userposts);
+    return res.status(200).json(posts);
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({ message: "Internal Server Error" });
+    console.log("Error in getUserPosts controller: ", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 module.exports = {

@@ -7,13 +7,14 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
+import { useSelector } from "react-redux";
 
 const Post = ({ post }) => {
   const [comment, setComment] = useState("");
-  const postOwner = post.user;
-  const isLiked = false;
-
-  const isMyPost = true;
+  const { userInfo } = useSelector((state) => state.auth);
+  const postOwner = post?.user;
+  const isLiked = post?.likes.includes(userInfo?._id);
+  const isMyPost = userInfo?._id === post.user._id;
 
   const formattedDate = "1h";
 

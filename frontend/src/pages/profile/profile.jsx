@@ -1,5 +1,5 @@
-import { useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link, useLocation, useParams } from "react-router-dom";
 
 import Posts from "../home/posts";
 import ProfileHeaderSkeleton from "../../components/skeleton/profileSkeleton";
@@ -9,7 +9,7 @@ import { FaArrowLeft } from "react-icons/fa6";
 import { IoCalendarOutline } from "react-icons/io5";
 import { FaLink } from "react-icons/fa";
 import { MdEdit } from "react-icons/md";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { useSelector } from "react-redux";
 
@@ -21,9 +21,12 @@ const ProfilePage = () => {
   const coverImgRef = useRef(null);
   const profileImgRef = useRef(null);
 
-  const isMyProfile = true;
   const { userInfo } = useSelector((state) => state.auth);
-  //console.log(userInfo);
+  // //console.log(userInfo);
+  // const { username } = useParams();
+  const location = useParams();
+  const username = location.username;
+  console.log(username);
 
   const {
     data: user,
@@ -35,7 +38,7 @@ const ProfilePage = () => {
     queryFn: async () => {
       try {
         const res = await axios.get(
-          `http://localhost:3006/api/user/getUser/${userInfo?.username}`,
+          `http://localhost:3006/api/user/getUser/${username}`,
           {
             withCredentials: true,
           }
@@ -48,7 +51,16 @@ const ProfilePage = () => {
     },
     retry: 2,
   });
-  console.log(user);
+
+  const queryClient = useQueryClient();
+  useEffect(() => {
+    queryClient.invalidateQueries(["userProfile"]);
+    queryClient.invalidateQueries({ queryKey: ['authUser'] }),
+    console.log("refetching2");
+    refetch();
+  }, [username]);
+
+  const isMyProfile = user?._id === userInfo?._id;
 
   const handleImgChange = (e, state) => {
     const file = e.target.files[0];
@@ -62,6 +74,49 @@ const ProfilePage = () => {
     }
   };
   const POSTS = [];
+
+  const {
+    isError,
+    isSuccess,
+    mutate: updateProfile,
+  } = useMutation({
+    mutationFn: async () => {
+      try {
+        const res = await axios.post(
+          `http://localhost:3006/api/user/updateUser/${user?._id}`,
+          {
+            profileImg,
+            coverImg,
+          },
+          { withCredentials: true }
+        );
+        console.log(res);
+        return res.data;
+      } catch (error) {
+        console.log(error);
+        throw new Error(error);
+      }
+    },
+    onSuccess: (data) => {
+      console.log(data);
+      queryClient.invalidateQueries(["userProfile"]);
+      queryClient.invalidateQueries(["userInfo"]);
+      setCoverImg("");
+      setProfileImg("");
+      setBio("");
+      setFullName("");
+    },
+    onError: (error) => {
+      console.log(error);
+    },
+  });
+
+  const handleProfileUpdate = () => {
+    console.log("updating profile");
+
+    updateProfile();
+  };
+
   return (
     <>
       <div className="flex-[4_4_0]  border-r border-gray-700 min-h-screen ">
@@ -134,7 +189,7 @@ const ProfilePage = () => {
                 </div>
               </div>
               <div className="flex justify-end px-4 mt-5">
-                {isMyProfile && <EditProfileModal />}
+                {isMyProfile && <EditProfileModal user={user} />}
                 {!isMyProfile && (
                   <button
                     className="btn btn-outline rounded-full btn-sm"
@@ -146,7 +201,7 @@ const ProfilePage = () => {
                 {(coverImg || profileImg) && (
                   <button
                     className="btn btn-primary rounded-full btn-sm text-white px-4 ml-2"
-                    onClick={() => alert("Profile updated successfully")}
+                    onClick={() => handleProfileUpdate()}
                   >
                     Update
                   </button>
@@ -202,7 +257,7 @@ const ProfilePage = () => {
               </div>
               <div className="flex w-full border-b border-gray-700 mt-4">
                 <div
-                  className="flex justify-center flex-1 p-3 hover:bg-secondary transition duration-300 relative cursor-pointer"
+                  className="flex justify-center flex-1 p-3 y transition duration-300 relative cursor-pointer"
                   onClick={() => setFeedType("posts")}
                 >
                   Posts
@@ -211,7 +266,7 @@ const ProfilePage = () => {
                   )}
                 </div>
                 <div
-                  className="flex justify-center flex-1 p-3 text-slate-500 hover:bg-secondary transition duration-300 relative cursor-pointer"
+                  className="flex justify-center flex-1 p-3 text-slate-500 transition duration-300 relative cursor-pointer"
                   onClick={() => setFeedType("likes")}
                 >
                   Likes

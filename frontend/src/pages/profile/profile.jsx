@@ -24,7 +24,7 @@ const ProfilePage = () => {
 
   const { userInfo } = useSelector((state) => state.auth);
   const location = useLocation();
-
+  
   const {
     data: user,
     isLoading,
@@ -62,6 +62,7 @@ const ProfilePage = () => {
   }, [location.pathname]);
 
   const isMyProfile = user?._id === userInfo?._id;
+  // console.log(userInfo);
 
   const handleImgChange = (e, state) => {
     const file = e.target.files[0];

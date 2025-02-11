@@ -65,7 +65,7 @@ const EditProfileModal = ({ user }) => {
         });
 
       setFormData({});
-      // naviagte(`/profile/${formData.username}`);
+      naviagte(`/profile/${formData.username}`);
       dispatch(isAuth(data));
     },
     onError: (error) => {

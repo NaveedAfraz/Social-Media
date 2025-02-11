@@ -9,6 +9,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { isAuth } from "../../redux/authSlice";
+import { FaMessage } from "react-icons/fa6";
 const Sidebar = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -101,6 +102,17 @@ const Sidebar = () => {
             >
               <FaUser className="w-6 h-6" />
               <span className="text-lg hidden md:block">Profile</span>
+            </button>
+          </li>
+          <li className="flex justify-center md:justify-start">
+            <button
+              onClick={() => {
+                navigate(`/messages`);
+              }}
+              className="flex gap-3 items-center hover:bg-stone-900 transition-all rounded-full duration-300 py-2 pl-2 pr-4 max-w-fit cursor-pointer"
+            >
+              <FaMessage className="w-6 h-6" />
+              <span className="text-lg hidden md:block">Messages</span>
             </button>
           </li>
         </ul>

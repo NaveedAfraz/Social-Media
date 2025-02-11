@@ -14,6 +14,7 @@ import NotificationPage from "./pages/notification/nodification";
 import ProfilePage from "./pages/profile/profile";
 import AuthReCheck from "./components/auth/authreCheck";
 import { useSelector } from "react-redux";
+import Messages from "./pages/messages/messages";
 function App() {
   const { userInfo } = useSelector((state) => state.auth);
   console.log(userInfo);
@@ -25,6 +26,7 @@ function App() {
     }
   }, [userInfo, navigate]);
   const isPublicRoute = ["/login", "/signup"].includes(location.pathname);
+
   return (
     <div className="flex">
       {!isPublicRoute && <Sidebar />}
@@ -38,9 +40,10 @@ function App() {
           <Route path="/home" element={<Home />}></Route>
           <Route path="/notifications" element={<NotificationPage />} />
           <Route path="/profile/:username" element={<ProfilePage />} />
+          <Route path="/messages" element={<Messages />}></Route>
         </Route>
       </Routes>
-      {!isPublicRoute && <RightPanel />}
+      {!isPublicRoute&& !location.pathname.includes("messages") && <RightPanel />}
 
       {/* <Route path="/" element={<Navigate to="/home" replace />} />
       <Route path="*" element={<Navigate to="/login" replace />} /> */}

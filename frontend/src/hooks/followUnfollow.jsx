@@ -1,5 +1,5 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
 
 const useFollow = () => {
   const queryClient = useQueryClient();
@@ -17,20 +17,22 @@ const useFollow = () => {
 
         return res.data;
       } catch (error) {
-        console.error('Error:', error.response?.data || error.message);
-        throw new Error(error.response?.data?.error || 'Something went wrong!');
+        console.error("Error:", error.response?.data || error.message);
+        throw new Error(error.response?.data?.error || "Something went wrong!");
       }
     },
     onSuccess: () => {
       Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['suggestedUsers'] }),
-        queryClient.invalidateQueries({ queryKey: ['userProfile'] }).then(() => {
-          console.log('Invalidated userProfile query');
-        })
+        queryClient.invalidateQueries({ queryKey: ["suggestedUsers"] }),
+        queryClient
+          .invalidateQueries({ queryKey: ["userProfile"] })
+          .then(() => {
+            console.log("Invalidated userProfile query");
+          }),
       ]);
     },
     onError: (error) => {
-      console.error('Mutation error:', error.message);
+      console.error("Mutation error:", error.message);
     },
   });
 

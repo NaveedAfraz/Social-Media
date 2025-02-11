@@ -31,6 +31,7 @@ const RightPanel = () => {
       console.error("Error fetching suggested users:", error);
     },
   });
+  console.log("Suggested Users:", suggestedUsers);
 
   const { follow, isPending } = useFollow();
 

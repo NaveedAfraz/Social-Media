@@ -34,7 +34,7 @@ const followUnfollowUserProfile = async (req, res) => {
     const userid = req.User._id;
     const userToModify = await user.findById(id); // user to follow/unfollow
     const currentuser = await user.findById(userid); // logged in user
-    // console.log(userToModify, "userto modiy is this ");
+    console.log(userToModify, "userto modiy is this ");
 
     if (!userToModify || !userid) {
       console.log("userid or userToModify not found");
@@ -51,33 +51,53 @@ const followUnfollowUserProfile = async (req, res) => {
     if (userToModify.followers.includes(userid)) {
       //umfollow
       await user.findByIdAndUpdate(id, {
-        $pull: { followers: userid },
+        $pull: { followers: { user: userid } },
       });
-      await user.findByIdAndUpdate(userid, { $pull: { following: id } });
+      await user.findByIdAndUpdate(userid, {
+        $pull: { following: { user: id } },
+      });
+
       const notification = new Nodification({
         senderId: userid,
         receiverId: id,
         message: `has unfollowed you`,
       });
       await notification.save();
-      return res
-        .status(200)
-        .json({ message: "User unfollowed", Nodification: notification });
+
+      return res.status(200).json({
+        message: "User unfollowed",
+        notification: notification,
+      });
     } else {
       //follow
       await user.findByIdAndUpdate(userid, {
-        $push: { following: id },
+        $push: {
+          following: {
+            id,
+            username: userToModify.username,
+          },
+        },
       });
-      await user.findByIdAndUpdate(id, { $push: { followers: userid } });
+      await user.findByIdAndUpdate(id, {
+        $push: {
+          followers: {
+            userid,
+            username: currentuser.username,
+          },
+        },
+      });
+
       const notification = new Nodification({
         senderId: userid,
         receiverId: id,
-        message: ` has started following you`,
+        message: `has started following you`,
       });
       await notification.save();
-      return res
-        .status(200)
-        .json({ message: "User followed", Nodification: notification });
+
+      return res.status(200).json({
+        message: "User followed",
+        notification: notification,
+      });
     }
   } catch (error) {
     console.log(error.message);
@@ -98,17 +118,28 @@ const getSuggestedUsers = async (req, res) => {
       console.log("User not found");
       return res.status(404).json({ message: "User not found" });
     }
-    console.log(currentuser);
+    //console.log(currentuser);
 
     const suggestedUsers = await user.aggregate([
-      { $match: { _id: { $ne: userid } } },
-      { $sample: { size: 10 } },
+      { $match: { _id: { $ne: userid } } }, // Exclude current user
+      { $sample: { size: 10 } }, // Get random users
     ]);
+    
+   
+    const followingUsernames = currentuser.following.map(user => user.username);
+    console.log("Following Usernames:", followingUsernames);
+    
 
-    const filtering = suggestedUsers.filter((user) => {
-      return !currentuser.following.includes(user._id);
-    });
-    const suggested = filtering.slice(0, 10);
+    const nonFollowingUsers = suggestedUsers.filter(user =>
+      !followingUsernames.includes(user.username) 
+    );
+    
+    console.log("Non-Following Users:", nonFollowingUsers);
+    
+    const suggested = nonFollowingUsers.slice(0, 10);
+    console.log("Suggested Users:", suggested);
+    
+
     res.status(200).json({ suggested });
   } catch (error) {
     console.log(error.message);

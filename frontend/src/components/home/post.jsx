@@ -9,12 +9,12 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { useSelector } from "react-redux";
 
-const Post = ({ post , ProfileUsername ,feedType}) => {
+const Post = ({ post, ProfileUsername, feedType }) => {
   const [comment, setComment] = useState("");
   const { userInfo } = useSelector((state) => state.auth);
   const postOwner = post?.user;
   const isLiked = post?.likes.includes(userInfo?._id);
-  const isMyPost = userInfo?._id === post.user._id;
+  const isMyPost = userInfo?._id === post?.user?._id;
 
   const formattedDate = "1h";
 
@@ -150,20 +150,27 @@ const Post = ({ post , ProfileUsername ,feedType}) => {
       <div className="flex gap-2 items-start p-4 border-b border-gray-700">
         <div className="avatar">
           <Link
-            to={`/profile/${postOwner.username}`}
+            to={`/profile/${postOwner?.username}`}
             className="w-8 rounded-full overflow-hidden"
           >
-            <img src={postOwner.profileImg || "/avatar-placeholder.png"} />
+            <img src={postOwner?.profileImg || "/avatar-placeholder.png"} />
           </Link>
         </div>
         <div className="flex flex-col flex-1">
           <div className="flex gap-2 items-center">
-            <Link to={`/profile/${postOwner.username}`} className="font-bold">
-              {postOwner.fullName}
+            <Link to={`/profile/${postOwner?.username}`} className="font-bold">
+              {postOwner?.fullName}
             </Link>
             <span className="text-gray-700 flex gap-1 text-sm">
-              <Link to={`/profile/${postOwner.username}`}>
-                @{postOwner.username}
+              <Link
+                to={`/profile/${postOwner?.username}`}
+                className="hover:underline"
+              >
+                {postOwner?.username ? (
+                  "@" + postOwner.username
+                ) : (
+                  <p className="line-through"> DeletedAccount </p>
+                )}
               </Link>
               <span>·</span>
               <span>{formattedDate}</span>
@@ -178,10 +185,10 @@ const Post = ({ post , ProfileUsername ,feedType}) => {
             )}
           </div>
           <div className="flex flex-col gap-3 overflow-hidden">
-            <span>{post.text}</span>
-            {post.img && (
+            <span>{post?.text}</span>
+            {post?.img && (
               <img
-                src={post.img}
+                src={post?.img}
                 className="h-80 object-contain rounded-lg border border-gray-700"
                 alt=""
               />
@@ -199,12 +206,12 @@ const Post = ({ post , ProfileUsername ,feedType}) => {
               >
                 <FaRegComment className="w-4 h-4  text-slate-500 group-hover:text-sky-400" />
                 <span className="text-sm text-slate-500 group-hover:text-sky-400">
-                  {post.comments.length}
+                  {post?.comments.length}
                 </span>
               </div>
               {/* We're using Modal Component from DaisyUI */}
               <dialog
-                id={`comments_modal${post._id}`}
+                id={`comments_modal${post?._id}`}
                 className="modal border-none outline-none"
               >
                 <div className="modal-box rounded border border-gray-600">
@@ -221,7 +228,7 @@ const Post = ({ post , ProfileUsername ,feedType}) => {
                           <div className="w-8 rounded-full">
                             <img
                               src={
-                                comment.user.profileImg ||
+                                comment?.user?.profileImg ||
                                 "/avatar-placeholder.png"
                               }
                             />
@@ -230,13 +237,13 @@ const Post = ({ post , ProfileUsername ,feedType}) => {
                         <div className="flex flex-col">
                           <div className="flex items-center gap-1">
                             <span className="font-bold">
-                              {comment.user.fullName}
+                              {comment?.user?.fullName}
                             </span>
                             <span className="text-gray-700 text-sm">
-                              @{comment.user.username}
+                              @{comment?.user?.username}
                             </span>
                           </div>
-                          <div className="text-sm">{comment.text}</div>
+                          <div className="text-sm">{comment?.text}</div>
                         </div>
                       </div>
                     ))}

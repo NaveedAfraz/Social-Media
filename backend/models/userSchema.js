@@ -7,9 +7,25 @@ const userSchema = new Schema(
     username: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    followers: [{ type: Schema.Types.ObjectId, ref: "user" }],
+    followers: [
+      {
+        user: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "user",
+        },
+        username: String,
+      },
+    ],
 
-    following: [{ type: Schema.Types.ObjectId, ref: "user" }],
+    following: [
+      {
+        user: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "user",
+        },
+        username: String,
+      },
+    ],
     profileImg: {
       type: String,
       default: "",

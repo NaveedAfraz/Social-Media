@@ -10,16 +10,21 @@ import SearchBar from "../../components/messages/searchBar";
 import ChatList from "../../components/messages/chatList";
 import ChatBox from "../../components/messages/chatBox";
 import { useQueryClient } from "@tanstack/react-query";
+import { socket } from "../../socket";
 
 function Messages() {
   const [selectedChat, setSelectedChat] = useState(null);
   const [chatOpen, setChatOpen] = useState(false);
   const queryClient = useQueryClient();
-  const handleChatOpen = ({ id, username }) => {
-    console.log("Chat opened");
+  const handleChatOpen = ({ userID, username, receiverID }) => {
+    console.log(receiverID)
     setChatOpen(true);
-    console.log(id);
-    setSelectedChat(username);
+    const data = {
+      userID,
+      username,
+      receiverID,
+    };
+    setSelectedChat(data);
   };
 
   useEffect(() => {

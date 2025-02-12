@@ -3,7 +3,7 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const socketIo = require("socket.io");
-
+const http = require("http");
 const dotenv = require("dotenv");
 app.use(express.json({ limit: "50mb" }));
 app.use(cookieParser());
@@ -18,9 +18,11 @@ app.use(
   })
 );
 
+const server = http.createServer(app);
+
 const io = socketIo(server, {
   cors: {
-    origin: "http://localhost:3006", // Adjust frontend URL if needed
+    origin: "http://localhost:5173",
     credentials: true,
   },
 });
@@ -51,8 +53,6 @@ app.use("/api/posts", postRoutes);
 app.use("/api/nodification", nodificationRoutes);
 app.use("/api/Communication", CommunicationRoutes);
 const port = process.env.PORT;
-
-app.listen(port, () => {
+server.listen(port, () => {
   console.log(`Server is running on port ${port}`);
-  // console.log("data base connected", db);
 });

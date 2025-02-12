@@ -1,44 +1,82 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
+import { useSelector } from "react-redux";
 
 function ChatBox({ chatOpen, selectedChat, socket }) {
   const queryClient = useQueryClient();
   const [newMessage, setNewMessage] = useState("");
 
+  const userInfo = useSelector((state) => state.auth);
+  const senderID = selectedChat?.userID;
+  const receiverID = selectedChat?.receiverID;
   const { data: messages, isLoading } = useQuery({
     queryKey: ["messages", selectedChat?.id],
     queryFn: async () => {
       const { data } = await axios.get(
-        `http://localhost:3006/api/Communication/${selectedChat.id}/messages`
+        `http://localhost:3006/api/Communication/${selectedChat.id}/messages`,
+        { withCredentials: true }
       );
       return data;
     },
     enabled: !!selectedChat?.id,
   });
 
-  const sendMessageMutation = useMutation({
-    mutationFn: async ({ chatId, content }) => {
-      const { data } = await axios.post(`http://localhost:3006/api/Communication/sendMessage`, { chatId, content });
+  const startChatMutation = useMutation({
+    mutationFn: async ({ content, senderID, receiverID }) => {
+      const { data } = await axios.post(
+        `http://localhost:3006/api/Communication/startChat`,
+        {
+          participants: { senderID: senderID, receiverID: receiverID },
+          message: content,
+        },
+        { withCredentials: true }
+      );
+      console.log(data);
+
       return data;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries(["messages", selectedChat.id]);
+      const chatId = data._id;
+
+      socket.emit("join chat", chatId);
+      queryClient.invalidateQueries(["messages", chatId]);
+      setNewMessage("");
+    },
+  });
+
+  const sendMessageMutation = useMutation({
+    mutationFn: async ({ chatId, content }) => {
+      const { data } = await axios.post(
+        `http://localhost:3006/api/Communication/sendMessage/:${userInfo._id}`,
+        { chatId, content },
+        { withCredentials: true }
+      );
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries(["messages", data._id]);
 
       const lastMessage = data.messages.slice(-1)[0];
       socket.emit("new message", lastMessage);
+
       setNewMessage("");
     },
   });
 
   const handleSendMessage = () => {
     if (newMessage.trim() && selectedChat) {
-      sendMessageMutation.mutate({
-        chatId: selectedChat.id,
+      console.log(selectedChat);
+
+      startChatMutation.mutate({
+        receiverID: receiverID,
         content: newMessage,
+        senderID: senderID,
       });
     }
   };
+  // console.log(selectedChat);
 
   return (
     <div className="flex-[4_4_0] w-full">

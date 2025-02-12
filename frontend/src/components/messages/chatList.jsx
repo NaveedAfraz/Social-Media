@@ -3,7 +3,7 @@ import { useSelector } from "react-redux";
 
 function ChatList({ handleChatOpen }) {
   const { userInfo } = useSelector((state) => state.auth);
-  console.log(userInfo?.following);
+  console.log(userInfo);
 
   return (
     <div>
@@ -13,7 +13,11 @@ function ChatList({ handleChatOpen }) {
             key={follow._id}
             className="cursor-pointer w-[99%] bg-amber-300 flex *:hover:bg-amber-400 items-center  p-2 rounded-md"
             onClick={() =>
-              handleChatOpen({ id: follow._id, username: follow.username })
+              handleChatOpen({
+                userID: follow._id,
+                username: follow.username,
+                receiverID: userInfo._id,
+              })
             }
           >
             {follow.username}

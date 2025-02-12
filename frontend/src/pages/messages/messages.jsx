@@ -17,12 +17,12 @@ function Messages() {
   const queryClient = useQueryClient();
   const handleChatOpen = ({ receiverUserName, senderUserName }) => {
     setChatOpen(true);
+    
     const data = {
       senderUserName,
       receiverUserName,
     };
     console.log(data);
-
     setSelectedChat(data);
   };
 
@@ -53,7 +53,7 @@ function Messages() {
           setSelectedChat={setSelectedChat}
         />
       </div>
-      <ChatBox chatOpen={chatOpen} selectedChat={selectedChat} />
+      <ChatBox chatOpen={chatOpen} selectedChat={selectedChat} socket={socket} />
     </>
   );
 }

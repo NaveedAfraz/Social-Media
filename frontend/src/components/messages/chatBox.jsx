@@ -7,13 +7,12 @@ function ChatBox({ chatOpen, selectedChat, socket }) {
   const queryClient = useQueryClient();
   const [newMessage, setNewMessage] = useState("");
   const [chatId, setChatId] = useState(null);
-  // console.log("selectedChat in chatbox", selectedChat);
   const [messagesArr, setMessagesArr] = useState([]);
   const userInfo = useSelector((state) => state.auth);
-  // console.log("selected", selectedChat);
 
   const senderUser = selectedChat?.senderUserName;
   const receiverUser = selectedChat?.receiverUserName;
+
   const {
     data: fetchedMessages,
     isLoading,
@@ -21,16 +20,21 @@ function ChatBox({ chatOpen, selectedChat, socket }) {
   } = useQuery({
     queryKey: ["messages", chatId],
     queryFn: async () => {
-      const { data } = await axios.get(
-        `http://localhost:3006/api/Communication/${chatId}/messages`,
-        { withCredentials: true }
-      );
-      console.log("chatId in useQuery", chatId);
-      console.log("data in useQuery", data);
-      if (data && data.messages) {
-        setMessagesArr(data.messages);
+      try {
+        const { data } = await axios.get(
+          `http://localhost:3006/api/Communication/${chatId}/messages`,
+          { withCredentials: true }
+        );
+        console.log("chatId in useQuery", chatId);
+        console.log("data in useQuery", data);
+        if (data && data.messages) {
+          setMessagesArr(data.messages);
+        }
+        return data.messages;
+      } catch (error) {
+        console.error("Error fetching messages in queryFn:", error);
+        throw error;
       }
-      return data.messages;
     },
     enabled: !!chatId,
     onSuccess: (data) => {
@@ -43,44 +47,63 @@ function ChatBox({ chatOpen, selectedChat, socket }) {
 
   const startChatMutation = useMutation({
     mutationFn: async ({ senderUsername, receiverUsername }) => {
-      const { data } = await axios.post(
-        `http://localhost:3006/api/Communication/startChat`,
-        { senderUsername, receiverUsername },
-        { withCredentials: true }
-      );
-      console.log(data);
-      return data;
+      try {
+        const { data } = await axios.post(
+          `http://localhost:3006/api/Communication/startChat`,
+          { senderUsername, receiverUsername },
+          { withCredentials: true }
+        );
+        console.log("startChat response data:", data);
+        return data;
+      } catch (error) {
+        console.error("Error in startChatMutation:", error);
+        throw error;
+      }
     },
     onSuccess: (data) => {
-      const newChatId = data._id;
-      setChatId(newChatId);
+      console.log("startChatMutation onSuccess:", data);
+      if (data.existingChat._id) {
+        setChatId(data.existingChat._id);
+      } else {
+        const newChatId = data._id;
+        setChatId(newChatId);
+      }
 
-      setChatId(data.existingChat._id);
+      // setChatId(data.existingChat._id);
       socket.emit("join chat", chatId);
       queryClient.invalidateQueries(["messages", newChatId]);
       setNewMessage("");
+    },
+    onError: (error) => {
+      console.error("startChatMutation onError:", error);
     },
   });
 
   const sendMessageMutation = useMutation({
     mutationFn: async ({ chatId, content }) => {
-      const { data } = await axios.post(
-        `http://localhost:3006/api/Communication/sendMessage/${senderUser}`,
-        { chatId, content },
-        { withCredentials: true }
-      );
-      console.log("data in sendMessageMutation", data);
-
-      return data;
+      try {
+        const { data } = await axios.post(
+          `http://localhost:3006/api/Communication/sendMessage/${senderUser}`,
+          { chatId, content },
+          { withCredentials: true }
+        );
+        console.log("data in sendMessageMutation", data);
+        return data;
+      } catch (error) {
+        console.error("Error in sendMessageMutation:", error);
+        throw error;
+      }
     },
     onSuccess: (data) => {
-      const lastMessage = data.messages.slice(-1)[0];
+      const lastMessage = data;
       console.log("lastMessage", lastMessage);
 
       setMessagesArr((prev) => [...prev, lastMessage]);
-
       socket.emit("new message", lastMessage);
       setNewMessage("");
+    },
+    onError: (error) => {
+      console.error("sendMessageMutation onError:", error);
     },
   });
 
@@ -96,6 +119,7 @@ function ChatBox({ chatOpen, selectedChat, socket }) {
   }, [selectedChat]);
 
   console.log("chatID :", chatId);
+
   // useEffect(() => {
   //   if (chatId) {
   //     queryClient.invalidateQueries(["messages", chatId]);
@@ -108,7 +132,6 @@ function ChatBox({ chatOpen, selectedChat, socket }) {
     if (!socket) return;
 
     const handleNewMessage = (incomingMessage) => {
-      // Append the new message to our messages array.
       setMessagesArr((prev) => [...prev, incomingMessage]);
     };
     console.log("running");
@@ -121,10 +144,12 @@ function ChatBox({ chatOpen, selectedChat, socket }) {
   const handleSendMessage = () => {
     if (newMessage.trim() && !chatId) {
       console.log(selectedChat);
+      setMessagesArr("");
     } else {
       sendMessageMutation.mutate({ chatId, content: newMessage });
     }
   };
+
   return (
     <div className="flex-[4_4_0] w-full">
       <div className="text-white text-xl font-bold p-4 w-full bg-amber-300">
@@ -138,10 +163,13 @@ function ChatBox({ chatOpen, selectedChat, socket }) {
             <p>Loading messages...</p>
           ) : (
             <div className="space-y-2">
-              {messagesArr.map((msg) => (
-                <div key={msg._id} className="p-2 bg-blue-700 rounded">
-                  <strong>{msg.senderUsername}: </strong>
-                  {msg.content}
+              {messagesArr.map((msg, index) => (
+                <div
+                  key={`${msg._id}-${index}`}
+                  className="p-2 bg-blue-700 rounded"
+                >
+                  <strong>{msg?.sender.username}: </strong>
+                  {msg?.content}
                 </div>
               ))}
             </div>

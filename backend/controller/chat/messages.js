@@ -1,31 +1,39 @@
 const Chat = require("../../models/chat");
+const { Message } = require("../../models/messages");
 
 const StartChat = async (req, res) => {
   try {
-    const userID = req.User._id;
-    console.log(req.body);
-    // console.log(req.body.participants.senderID);
+    // const userID = req.User._id;
+    // console.log("body", req.body);
+    const senderUsername = req.body.senderUsername;
+    const receiverUsername = req.body.receiverUsername;
+    // const senderUsername = await user.findOne({
+    //   username: req.body.senderUsername,
+    // });
+    // const receiverUsername = await user.findOne({
+    //   username: req.body.receiverUsername,
+    // });
 
-    const { receiverID, senderID } = req.body.participants;
-    console.log(receiverID);
+    if (!receiverUsername)
+      return res.status(402).json({ message: "Recivername not found" });
+    if (!senderUsername)
+      return res.status(401).json({ message: "user id not found" });
 
-    if (!receiverID)
-      return res.status(402).json({ message: "ReciverID not found" });
-    if (!userID) return res.status(401).json({ message: "user id not found" });
     const existingChat = await Chat.findOne({
-      participants: {
-        $all: [userID, receiverID],
-        $size: 2,
-      },
-    }).populate("participants", "username");
+      participants: { $all: [senderUsername, receiverUsername] },
+    });
+    // console.log("existingChat :", existingChat);
 
     if (existingChat)
       return res.json({ message: "existingchat", existingChat });
+    // console.log("existingChat :", existingChat);
 
     // Create new chat
     const newChat = new Chat({
-      participants: [userID, receiverID],
+      participants: [senderUsername, receiverUsername],
     });
+    // console.log("newChat :", newChat);
+
     await newChat.save();
     return res.status(201).json(newChat);
   } catch (err) {
@@ -39,28 +47,32 @@ const startMessage = async (req, res) => {
   try {
     const userID = req.User._id;
     const { chatId, content } = req.body;
+    if (!chatId)
+      return res.status(400).json({ message: "Chat ID is required" });
 
-    console.log();
+    if (!content)
+      return res.status(400).json({ message: "Content is required" });
+
     if (!userID) return res.status(401).json({ message: "Unauthorized" });
-    const chat = await Chat.findByIdAndUpdate(
-      chatId,
-      {
-        $push: {
-          messages: {
-            sender: userID,
-            content: content,
-          },
-        },
-      },
-      { new: true }
-    );
+    const newMessage = await Message.create({
+      sender: userID,
+      content: content,
+      chat: chatId,
+    });
 
+    // 2. Push the message ID into Chat (if you maintain a messages array)
+    await Chat.findByIdAndUpdate(chatId, {
+      $push: { messages: newMessage._id },
+    });
+
+    const io = req.app.locals.io;
     // Emit socket.io event
-    io.to(chatId).emit("new message", chat.messages.slice(-1)[0]);
+    io.to(chatId).emit("new message", newMessage);
 
-    res.json(chat);
+    //console.log(content);
+    return res.status(201).json(newMessage);
   } catch (err) {
-    // console.log(err);
+    console.log(err);
 
     res.status(500).json({ message: err.message });
   }
@@ -72,20 +84,29 @@ const getMessages = async (req, res) => {
     if (!chatId) {
       return res.status(400).json({ message: "Chat ID is required" });
     }
-    const chat = await Chat.findById(chatId).populate(
-      "messages.sender",
-      "username"
-    );
+    const chat = await Chat.findById(chatId).populate({
+      path: "messages",
+      populate: {
+        path: "sender",
+        select: "username",
+      },
+    });
+
+    console.log("shat", chat);
 
     if (!chat) {
       return res.status(404).json({ message: "Chat not found" });
     }
 
-    res.json(chat.messages);
-  } catch (err) {
-    // console.log(err);
+    if (!chat) {
+      return res.status(404).json({ message: "Chat not found" });
+    }
 
-    res.status(500).json({ message: err.message });
+    return res.status(200).json(chat);
+  } catch (err) {
+    console.log(err);
+
+    return res.status(500).json({ message: err.message });
   }
 };
 

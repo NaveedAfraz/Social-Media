@@ -14,8 +14,9 @@ const messageSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  chat: { type: String, ref: "Chat", required: true },
 });
 
 const Message = mongoose.model("Message", messageSchema);
 
-module.exports = { Message, messageSchema };
+module.exports = { Message };

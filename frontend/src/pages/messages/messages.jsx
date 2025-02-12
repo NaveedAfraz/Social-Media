@@ -11,25 +11,24 @@ import ChatList from "../../components/messages/chatList";
 import ChatBox from "../../components/messages/chatBox";
 import { useQueryClient } from "@tanstack/react-query";
 import { socket } from "../../socket";
-
 function Messages() {
   const [selectedChat, setSelectedChat] = useState(null);
   const [chatOpen, setChatOpen] = useState(false);
   const queryClient = useQueryClient();
-  const handleChatOpen = ({ userID, username, receiverID }) => {
-    console.log(receiverID)
+  const handleChatOpen = ({ receiverUserName, senderUserName }) => {
     setChatOpen(true);
     const data = {
-      userID,
-      username,
-      receiverID,
+      senderUserName,
+      receiverUserName,
     };
+    console.log(data);
+
     setSelectedChat(data);
   };
 
   useEffect(() => {
     socket.on("new message", (message) => {
-      if (selectedChat && message.chatId === selectedChat.id) {
+      if (selectedChat) {
         queryClient.invalidateQueries(["messages", selectedChat.id]);
       }
     });

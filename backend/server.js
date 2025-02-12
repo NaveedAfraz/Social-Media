@@ -26,7 +26,7 @@ const io = socketIo(server, {
     credentials: true,
   },
 });
-
+app.locals.io = io;
 io.on("connection", (socket) => {
   console.log("A user connected");
 

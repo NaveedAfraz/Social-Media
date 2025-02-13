@@ -12,154 +12,103 @@ function ChatBox({ chatOpen, selectedChat, socket }) {
 
   const senderUser = selectedChat?.senderUserName;
   const receiverUser = selectedChat?.receiverUserName;
-  const [socketMessages, setSocketMessages] = useState([]);
 
-  const {
-    data: fetchedMessages,
-    isLoading,
-    refetch,
-  } = useQuery({
-    queryKey: ["messages", chatId],
-    queryFn: async () => {
-      try {
-        const { data } = await axios.get(
-          `http://localhost:3006/api/Communication/${chatId}/messages`,
-          { withCredentials: true }
-        );
-        console.log("chatId in useQuery", chatId);
-        console.log("data in useQuery", data);
-        if (data) {
-          console.log("data.messages");
-
-          setMessagesArr(fetchedMessages);
-          console.log(messagesArr);
-        }
-        return data.messages;
-      } catch (error) {
-        console.error("Error fetching messages in queryFn:", error);
-        throw error;
-      }
-    },
-    enabled: !!chatId,
-    staleTime: 0,
-    onSuccess: (data) => {
-      console.log("Messages fetched successfully:", data);
-    },
-    onError: (error) => {
-      console.error("Error fetching messages:", error);
-    },
-  });
-  console.log(fetchedMessages);
-
+  // Start chat mutation - now with proper error handling and state management
   const startChatMutation = useMutation({
     mutationFn: async ({ senderUsername, receiverUsername }) => {
-      try {
-        const { data } = await axios.post(
-          `http://localhost:3006/api/Communication/startChat`,
-          { senderUsername, receiverUsername },
-          { withCredentials: true }
-        );
-        console.log("startChat response data:", data);
-        return data;
-      } catch (error) {
-        console.error("Error in startChatMutation:", error);
-        throw error;
-      }
+      const { data } = await axios.post(
+        `http://localhost:3006/api/Communication/startChat`,
+        { senderUsername, receiverUsername },
+        { withCredentials: true }
+      );
+      return data;
     },
     onSuccess: (data) => {
-      console.log("startChatMutation onSuccess:", data);
-      // if (data.existingChat._id) {
-      //   setChatId(data.existingChat._id);
-      // } else {
-      //   const newChatId = data._id;
-      //   setChatId(newChatId);
-      // }
       const newChatId = data.existingChat?._id || data._id;
-      // Update the state
       setChatId(newChatId);
-      // setChatId(data.existingChat._id);
-      socket.emit("join chat", chatId);
+
+      // Only join the chat room if we have a valid chat ID
+      if (newChatId) {
+        socket?.emit("join chat", newChatId);
+      }
+    },
+  });
+
+  // Messages query - now with proper dependency tracking
+  const { data: fetchedMessages, isLoading } = useQuery({
+    queryKey: ["messages", chatId],
+    queryFn: async () => {
+      const { data } = await axios.get(
+        `http://localhost:3006/api/Communication/${chatId}/messages`,
+        { withCredentials: true }
+      );
+      return data.messages;
+    },
+    enabled: Boolean(chatId),
+    staleTime: 0,
+  });
+
+  // Send message mutation - simplified and more robust
+  const sendMessageMutation = useMutation({
+    mutationFn: async ({ chatId, content }) => {
+      const { data } = await axios.post(
+        `http://localhost:3006/api/Communication/sendMessage/${senderUser}`,
+        { chatId, content },
+        { withCredentials: true }
+      );
+      return data;
+    },
+    onSuccess: () => {
       queryClient.invalidateQueries(["messages", chatId]);
       setNewMessage("");
     },
-    onError: (error) => {
-      console.error("startChatMutation onError:", error);
-    },
   });
 
-  const sendMessageMutation = useMutation({
-    mutationFn: async ({ chatId, content }) => {
-      try {
-        const { data } = await axios.post(
-          `http://localhost:3006/api/Communication/sendMessage/${senderUser}`,
-          { chatId, content },
-          { withCredentials: true }
-        );
-        console.log("data in sendMessageMutation", data);
-        return data;
-      } catch (error) {
-        console.error("Error in sendMessageMutation:", error);
-        throw error;
-      }
-    },
-    onSuccess: (data) => {
-      const lastMessage = data;
-      console.log("lastMessage", lastMessage);
-
-      setMessagesArr((prev) => [...prev, lastMessage]);
-      socket.emit("new message", lastMessage);
-      setNewMessage("");
-    },
-    onError: (error) => {
-      console.error("sendMessageMutation onError:", error);
-    },
-  });
-
-  // console.log(selectedChat);
-
+  // Effect to initialize chat when selectedChat changes
   useEffect(() => {
-    startChatMutation.mutate({
-      chatId: chatId,
-      receiverUsername: receiverUser,
-      content: newMessage,
-      senderUsername: senderUser,
-    });
+    if (selectedChat) {
+      startChatMutation.mutate({
+        senderUsername: senderUser,
+        receiverUsername: receiverUser,
+      });
+    }
   }, [selectedChat]);
 
-  console.log("chatID :", chatId);
-
-  // useEffect(() => {
-  //   if (chatId) {
-  //     queryClient.invalidateQueries(["messages", chatId]);
-  //     console.log("running1");
-  //   }
-  // }, [chatId,newMessage]);
-  // console.log(selectedChat);
-
+  // Effect to update messages array when new messages are fetched
   useEffect(() => {
-    if (!socket) return;
+    if (fetchedMessages) {
+      setMessagesArr(fetchedMessages);
+    }
+  }, [fetchedMessages]);
+
+  // Socket event listener - now with proper cleanup and dependency tracking
+  useEffect(() => {
+    if (!socket || !chatId) return;
 
     const handleNewMessage = (incomingMessage) => {
-      console.log("New message received: ", incomingMessage);
-
       setMessagesArr((prev) => {
+        if (prev.some((msg) => msg._id === incomingMessage._id)) {
+          return prev;
+        }
         return [...prev, incomingMessage];
       });
     };
-    console.log("running");
 
     socket.on("new message", handleNewMessage);
-    return () => socket.off("new message", handleNewMessage);
-  }, [socket]);
-  console.log(messagesArr);
+
+    // Clean up socket listener when component unmounts or chatId changes
+    return () => {
+      socket.off("new message", handleNewMessage);
+    };
+  }, [socket, chatId]);
 
   const handleSendMessage = () => {
-    if (newMessage.trim() && !chatId) {
-      console.log(selectedChat);
-      setMessagesArr("");
-    } else {
-      sendMessageMutation.mutate({ chatId, content: newMessage });
-    }
+    if (!newMessage.trim() || !chatId) return;
+
+    sendMessageMutation.mutate({
+      chatId,
+      content: newMessage.trim(),
+    });
   };
 
   return (
@@ -175,9 +124,9 @@ function ChatBox({ chatOpen, selectedChat, socket }) {
             <p>Loading messages...</p>
           ) : (
             <div className="space-y-2">
-              {fetchedMessages?.map((msg, index) => (
+              {messagesArr?.map((msg, index) => (
                 <div
-                  key={`${msg._id}-${index}`}
+                  key={msg._id}
                   className={`flex flex-col w-[80%] ${
                     msg.sender.username === senderUser ? "ml-auto" : "mr-auto"
                   }`}

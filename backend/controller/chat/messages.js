@@ -92,7 +92,7 @@ const getMessages = async (req, res) => {
       },
     });
 
-    console.log("shat", chat);
+    //console.log("shat", chat);
 
     if (!chat) {
       return res.status(404).json({ message: "Chat not found" });

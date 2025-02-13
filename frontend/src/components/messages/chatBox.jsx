@@ -110,6 +110,8 @@ function ChatBox({ chatOpen, selectedChat, socket }) {
       content: newMessage.trim(),
     });
   };
+  console.log(messagesArr);
+  const lastMessage = messagesArr[messagesArr.length - 1];
 
   return (
     <div className="flex-[4_4_0] w-full">
@@ -124,33 +126,42 @@ function ChatBox({ chatOpen, selectedChat, socket }) {
             <p>Loading messages...</p>
           ) : (
             <div className="space-y-2">
-              {messagesArr?.map((msg, index) => (
-                <div
-                  key={msg._id}
-                  className={`flex flex-col w-[80%] ${
-                    msg.sender.username === senderUser ? "ml-auto" : "mr-auto"
-                  }`}
-                >
+              {messagesArr?.map((msg, index) => {
+               
+                if (
+                  index === messagesArr.length - 1 &&
+                  !msg?.sender?.username
+                ) {
+                  return null;
+                }
+                return (
                   <div
-                    className={`text-sm font-semibold mb-1 ${
-                      msg.sender.username === senderUser
-                        ? "text-right"
-                        : "text-left"
+                    key={msg._id}
+                    className={`flex flex-col w-[80%] ${
+                      msg.sender.username === senderUser ? "ml-auto" : "mr-auto"
                     }`}
                   >
-                    {msg.sender.username}
+                    <div
+                      className={`text-sm font-semibold mb-1 ${
+                        msg.sender.username === senderUser
+                          ? "text-right"
+                          : "text-left"
+                      }`}
+                    >
+                      {msg.sender.username}
+                    </div>
+                    <div
+                      className={`p-3 rounded-lg break-words ${
+                        msg.sender.username === senderUser
+                          ? "bg-blue-600 text-white"
+                          : "bg-gray-200 text-gray-800"
+                      }`}
+                    >
+                      {msg.content}
+                    </div>
                   </div>
-                  <div
-                    className={`p-3 rounded-lg break-words ${
-                      msg.sender.username === senderUser
-                        ? "bg-blue-600 text-white"
-                        : "bg-gray-200 text-gray-800"
-                    }`}
-                  >
-                    {msg.content}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
           <div className="mt-4">

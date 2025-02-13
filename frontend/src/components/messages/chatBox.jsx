@@ -12,6 +12,7 @@ function ChatBox({ chatOpen, selectedChat, socket }) {
 
   const senderUser = selectedChat?.senderUserName;
   const receiverUser = selectedChat?.receiverUserName;
+  const [socketMessages, setSocketMessages] = useState([]);
 
   const {
     data: fetchedMessages,
@@ -27,8 +28,11 @@ function ChatBox({ chatOpen, selectedChat, socket }) {
         );
         console.log("chatId in useQuery", chatId);
         console.log("data in useQuery", data);
-        if (data && data.messages) {
-          setMessagesArr(data.messages);
+        if (data) {
+          console.log("data.messages");
+
+          setMessagesArr(fetchedMessages);
+          console.log(messagesArr);
         }
         return data.messages;
       } catch (error) {
@@ -37,6 +41,7 @@ function ChatBox({ chatOpen, selectedChat, socket }) {
       }
     },
     enabled: !!chatId,
+    staleTime: 0,
     onSuccess: (data) => {
       console.log("Messages fetched successfully:", data);
     },
@@ -44,6 +49,7 @@ function ChatBox({ chatOpen, selectedChat, socket }) {
       console.error("Error fetching messages:", error);
     },
   });
+  console.log(fetchedMessages);
 
   const startChatMutation = useMutation({
     mutationFn: async ({ senderUsername, receiverUsername }) => {
@@ -62,16 +68,18 @@ function ChatBox({ chatOpen, selectedChat, socket }) {
     },
     onSuccess: (data) => {
       console.log("startChatMutation onSuccess:", data);
-      if (data.existingChat._id) {
-        setChatId(data.existingChat._id);
-      } else {
-        const newChatId = data._id;
-        setChatId(newChatId);
-      }
-
+      // if (data.existingChat._id) {
+      //   setChatId(data.existingChat._id);
+      // } else {
+      //   const newChatId = data._id;
+      //   setChatId(newChatId);
+      // }
+      const newChatId = data.existingChat?._id || data._id;
+      // Update the state
+      setChatId(newChatId);
       // setChatId(data.existingChat._id);
       socket.emit("join chat", chatId);
-      queryClient.invalidateQueries(["messages", newChatId]);
+      queryClient.invalidateQueries(["messages", chatId]);
       setNewMessage("");
     },
     onError: (error) => {
@@ -132,7 +140,11 @@ function ChatBox({ chatOpen, selectedChat, socket }) {
     if (!socket) return;
 
     const handleNewMessage = (incomingMessage) => {
-      setMessagesArr((prev) => [...prev, incomingMessage]);
+      console.log("New message received: ", incomingMessage);
+
+      setMessagesArr((prev) => {
+        return [...prev, incomingMessage];
+      });
     };
     console.log("running");
 
@@ -163,13 +175,31 @@ function ChatBox({ chatOpen, selectedChat, socket }) {
             <p>Loading messages...</p>
           ) : (
             <div className="space-y-2">
-              {messagesArr.map((msg, index) => (
+              {fetchedMessages?.map((msg, index) => (
                 <div
                   key={`${msg._id}-${index}`}
-                  className="p-2 bg-blue-700 rounded"
+                  className={`flex flex-col w-[80%] ${
+                    msg.sender.username === senderUser ? "ml-auto" : "mr-auto"
+                  }`}
                 >
-                  <strong>{msg?.sender.username}: </strong>
-                  {msg?.content}
+                  <div
+                    className={`text-sm font-semibold mb-1 ${
+                      msg.sender.username === senderUser
+                        ? "text-right"
+                        : "text-left"
+                    }`}
+                  >
+                    {msg.sender.username}
+                  </div>
+                  <div
+                    className={`p-3 rounded-lg break-words ${
+                      msg.sender.username === senderUser
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-200 text-gray-800"
+                    }`}
+                  >
+                    {msg.content}
+                  </div>
                 </div>
               ))}
             </div>

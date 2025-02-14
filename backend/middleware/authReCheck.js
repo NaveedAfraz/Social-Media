@@ -15,6 +15,7 @@ const protectedRoute = async (req, res, next) => {
     // console.log("decoded is token is here", decoded);
 
     const storeduser = await user.findById(decoded.id).select("-password");
+
     if (!storeduser) {
       console.log("User not found");
       return res

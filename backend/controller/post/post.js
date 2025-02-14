@@ -35,6 +35,8 @@ const CreatePost = async (req, res) => {
     }
 
     const UserData = await user.findById(userid);
+    // console.log("user data is this :", UserData);
+
     if (!UserData) {
       return res.status(400).json({ message: "User not found" });
     }
@@ -44,8 +46,15 @@ const CreatePost = async (req, res) => {
       img = upload.secure_url;
     }
 
-    const newPost = new post({ text, img, user: userid });
+    const newPost = new post({
+      text,
+      img,
+      user: userid,
+      username: UserData.username,
+    });
     await newPost.save();
+    // console.log(newPost);
+
     return res.status(200).json({ message: "Post created successfully" });
   } catch (error) {
     console.log(error);
@@ -250,19 +259,19 @@ const fetchfollowingPost = async (req, res) => {
     const following = userData.following;
     // console.log(following);
 
+    const followingUsernames = following.map((f) => f.username);
+
     if (following.length == 0)
       return res.status(400).json({ message: "No following found" });
-    const posts = await post.find({ user: userid });
-    // console.log("posts:", posts); // Check if this is an array of Mongoose documents
 
     const followingPosts = await post
-      .find({ user: { $in: following } }) // ✅ Corrected query syntax
+      .find({ username: { $in: followingUsernames } })
+      .sort({ createdAt: -1 })
       .populate("user")
-      .populate("comments.user"); // ✅ Populate nested user in comments
+      .populate("comments.user");
+    // console.log(followingPosts, "this is following posts");
 
-    // console.log(followingPosts);
-
-    if (!followingPosts)
+    if (followingPosts.length == 0)
       return res.status(400).json({ message: "No posts found" });
 
     return res.status(200).json(followingPosts);

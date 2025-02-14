@@ -15,8 +15,11 @@ const Post = ({ post, ProfileUsername, feedType }) => {
   const postOwner = post?.user;
   const isLiked = post?.likes.includes(userInfo?._id);
   const isMyPost = userInfo?._id === post?.user?._id;
+  console.log(post);
 
-  const formattedDate = "1h";
+  const formattedDate = post.updatedAt
+    ? new Date(post.updatedAt).toLocaleDateString()
+    : "";
 
   const isCommenting = false;
   const queryClient = useQueryClient();
@@ -149,12 +152,9 @@ const Post = ({ post, ProfileUsername, feedType }) => {
     <>
       <div className="flex gap-2 items-start p-4 border-b border-gray-700">
         <div className="avatar">
-          <Link
-            to={`/profile/${postOwner?.username}`}
-            className="w-8 rounded-full overflow-hidden"
-          >
-            <img src={postOwner?.profileImg || "/avatar-placeholder.png"} />
-          </Link>
+          <div className="w-8 rounded-full overflow-hidden">
+            <img alt="" src={postOwner?.profileImg} />
+          </div>
         </div>
         <div className="flex flex-col flex-1">
           <div className="flex gap-2 items-center">
@@ -166,12 +166,17 @@ const Post = ({ post, ProfileUsername, feedType }) => {
                 to={`/profile/${postOwner?.username}`}
                 className="hover:underline"
               >
-                {postOwner?.username ? (
-                  "@" + postOwner.username
-                ) : (
-                  <p className="line-through"> DeletedAccount </p>
-                )}
+                {postOwner?.username && "@" + postOwner.username}
               </Link>
+              {!postOwner?.username && (
+                <p className="cursor-pointer">
+                  {postOwner?.username ? (
+                    "@" + postOwner.username
+                  ) : (
+                    <p className="line-through"> DeletedAccount </p>
+                  )}
+                </p>
+              )}
               <span>·</span>
               <span>{formattedDate}</span>
             </span>
@@ -194,8 +199,8 @@ const Post = ({ post, ProfileUsername, feedType }) => {
               />
             )}
           </div>
-          <div className="flex justify-between mt-3">
-            <div className="flex gap-4 items-center w-2/3 justify-between">
+          <div className="flex justify-between items-center mt-3">
+            <div className="flex gap-4 items-center w-full justify-around">
               <div
                 className="flex gap-1 items-center cursor-pointer group"
                 onClick={() =>
@@ -271,14 +276,14 @@ const Post = ({ post, ProfileUsername, feedType }) => {
                   <button className="outline-none">close</button>
                 </form>
               </dialog>
-              <div className="flex gap-1 items-center group cursor-pointer">
+              {/* <div className="flex gap-1 items-center group cursor-pointer">
                 <BiRepost className="w-6 h-6  text-slate-500 group-hover:text-green-500" />
                 <span className="text-sm text-slate-500 group-hover:text-green-500">
                   0
                 </span>
-              </div>
+              </div> */}
               <div
-                className="flex gap-1 items-center group cursor-pointer"
+                className="flex gap-1 items-center justify-between group cursor-pointer"
                 onClick={handleLikePost}
               >
                 {!isLiked && (
@@ -293,13 +298,9 @@ const Post = ({ post, ProfileUsername, feedType }) => {
                     isLiked ? "text-pink-500" : ""
                   }`}
                 >
-                  {console.log(post.likes.length)}
                   {post.likes?.length ?? 0}
                 </span>
               </div>
-            </div>
-            <div className="flex w-1/3 justify-end gap-2 items-center">
-              <FaRegBookmark className="w-4 h-4 text-slate-500 cursor-pointer" />
             </div>
           </div>
         </div>

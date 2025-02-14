@@ -1,4 +1,5 @@
 const cloudinary = require("cloudinary").v2;
+const Chat = require("../../models/chat");
 const Nodification = require("../../models/nodification");
 const user = require("../../models/userSchema");
 const bcrypt = require("bcryptjs");
@@ -30,11 +31,14 @@ const followUnfollowUserProfile = async (req, res) => {
   if (!id) {
     return res.status(400).json({ message: "User ID is required" });
   }
+
   try {
     const userid = req.User._id;
     const userToModify = await user.findById(id); // user to follow/unfollow
     const currentuser = await user.findById(userid); // logged in user
+
     console.log(userToModify, "userto modiy is this ");
+    console.log(currentuser, "current user is this ");
 
     if (!userToModify || !userid) {
       console.log("userid or userToModify not found");
@@ -48,13 +52,18 @@ const followUnfollowUserProfile = async (req, res) => {
         .json({ message: "User cannot follow/unfollow themselves" });
     }
 
-    if (userToModify.followers.includes(userid)) {
+    const isFollowing = currentuser.following.some(
+      (follow) => follow.username === userToModify.username
+    );
+    console.log(isFollowing, "is following");
+
+    if (isFollowing) {
       //umfollow
       await user.findByIdAndUpdate(id, {
-        $pull: { followers: { user: userid } },
+        $pull: { followers: { username: currentuser.username } },
       });
       await user.findByIdAndUpdate(userid, {
-        $pull: { following: { user: id } },
+        $pull: { following: { username: userToModify.username } },
       });
 
       const notification = new Nodification({
@@ -124,21 +133,20 @@ const getSuggestedUsers = async (req, res) => {
       { $match: { _id: { $ne: userid } } }, // Exclude current user
       { $sample: { size: 10 } }, // Get random users
     ]);
-    
-   
-    const followingUsernames = currentuser.following.map(user => user.username);
-    console.log("Following Usernames:", followingUsernames);
-    
 
-    const nonFollowingUsers = suggestedUsers.filter(user =>
-      !followingUsernames.includes(user.username) 
+    const followingUsernames = currentuser.following.map(
+      (user) => user.username
     );
-    
+    // console.log("Following Usernames:", followingUsernames);
+
+    const nonFollowingUsers = suggestedUsers.filter(
+      (user) => !followingUsernames.includes(user.username)
+    );
+
     console.log("Non-Following Users:", nonFollowingUsers);
-    
+
     const suggested = nonFollowingUsers.slice(0, 10);
     console.log("Suggested Users:", suggested);
-    
 
     res.status(200).json({ suggested });
   } catch (error) {
@@ -211,6 +219,21 @@ const updateUserProfile = async (req, res) => {
       const uploadedCoverImg = await cloudinary.uploader.upload(coverImg);
       coverImg = uploadedCoverImg.secure_url;
     }
+
+    const updateChatName = await Chat.findOneAndUpdate(
+      { participants: data.username },
+      { $set: { "participants.$": username || data.username } },
+      { new: true }
+    );
+    console.log(updateChatName, "updateChatName");
+
+    const updateFollowingName = await user.updateMany(
+      { "following.username": data.username },
+      { $set: { "following.$.username": username || data.username } },
+      { new: true }
+    );
+
+    console.log(updateFollowingName, "updatefollowingName");
 
     const updatedUser = await user.findByIdAndUpdate(
       userid,

@@ -4,6 +4,8 @@ import axios from "axios";
 import { Navigate, Outlet } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { isAuth, Logout } from "../../redux/authSlice";
+import PostSkeleton from "../skeleton/postSkeleton";
+import ProfileHeaderSkeleton from "../skeleton/profileSkeleton";
 
 function AuthReCheck({ children }) {
   const dispatch = useDispatch();
@@ -40,7 +42,16 @@ function AuthReCheck({ children }) {
   }, [data]);
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <>
+        <div className="flex flex-col gap-4 w-full">
+          <ProfileHeaderSkeleton />
+          <PostSkeleton />
+          <PostSkeleton />
+          <PostSkeleton />
+        </div>
+      </>
+    );
   }
 
   if (isError || !data?.success) {

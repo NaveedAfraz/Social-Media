@@ -24,7 +24,7 @@ const ProfilePage = () => {
 
   const { userInfo } = useSelector((state) => state.auth);
   const location = useLocation();
-  
+
   const {
     data: user,
     isLoading,
@@ -114,19 +114,25 @@ const ProfilePage = () => {
     },
   });
 
-  //console.log(user?.following?.length);
+  console.log(user);
 
   const handleProfileUpdate = () => {
     console.log("updating profile");
     updateProfile();
   };
 
-  const amIFollowing = user?.followers?.includes(userInfo?._id);
+  console.log(userInfo);
+
+  const amIFollowing = user?.followers?.some(
+    (val) => val?.username === userInfo?.username
+  );
+  console.log(amIFollowing);
+  const [expanded, setExpanded] = useState(false);
 
   const { follow, isPending } = useFollow();
   return (
     <>
-      <div className="flex-[4_4_0]  border-r border-gray-700 min-h-screen ">
+      <div className="flex-[4_4_0]  border-r border-gray-700 min-h-screen">
         {/* HEADER */}
         {isLoading && <ProfileHeaderSkeleton />}
         {!isLoading && !user && (
@@ -168,6 +174,7 @@ const ProfilePage = () => {
                   ref={coverImgRef}
                   onChange={(e) => handleImgChange(e, "coverImg")}
                 />
+
                 <input
                   type="file"
                   hidden
@@ -223,7 +230,19 @@ const ProfilePage = () => {
                   <span className="text-sm text-slate-500">
                     @{user?.username}
                   </span>
-                  <span className="text-sm my-1">{user?.bio}</span>
+                  <span
+                    className={`text-sm my-1 ${expanded ? "" : "line-clamp-5"}`}
+                  >
+                    {user?.bio}
+                  </span>
+                  {user?.bio?.length > 20 && (
+                    <button
+                      className="text-sm text-blue-500 flex"
+                      onClick={() => setExpanded((prev) => !prev)}
+                    >
+                      {expanded ? "Less..." : "More..."}
+                    </button>
+                  )}
                 </div>
 
                 <div className="flex gap-2 flex-wrap">

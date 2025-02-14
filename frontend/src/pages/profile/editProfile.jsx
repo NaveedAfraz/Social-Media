@@ -54,7 +54,9 @@ const EditProfileModal = ({ user }) => {
     },
     onSuccess: (data) => {
       console.log(data);
-
+      if (data) {
+        document.getElementById("edit_profile_modal").close();
+      }
       queryClient
         .invalidateQueries(["userProfile"])
         .then(() => {

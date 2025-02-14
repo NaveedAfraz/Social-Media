@@ -40,10 +40,14 @@ function App() {
           <Route path="/home" element={<Home />}></Route>
           <Route path="/notifications" element={<NotificationPage />} />
           <Route path="/profile/:username" element={<ProfilePage />} />
-          <Route path="/messages" element={<Messages />}></Route>
+          <Route path="/messages" element={<Messages />}>
+           <Route path=":username" element={<Messages />} />
+          </Route>
         </Route>
       </Routes>
-      {!isPublicRoute&& !location.pathname.includes("messages") && <RightPanel />}
+      {!isPublicRoute && !location.pathname.includes("messages") && (
+        <RightPanel />
+      )}
 
       {/* <Route path="/" element={<Navigate to="/home" replace />} />
       <Route path="*" element={<Navigate to="/login" replace />} /> */}

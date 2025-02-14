@@ -1,31 +1,37 @@
 import React from "react";
 import { useSelector } from "react-redux";
 
-function ChatList({ handleChatOpen }) {
+function ChatList({ handleChatOpen, filtered }) {
   const { userInfo } = useSelector((state) => state.auth);
-  console.log(userInfo);
 
   return (
-    <div>
-      {userInfo?.following?.map((follow) => {
-        return (
-          <>
-            <button
-              key={follow._id}
-              className="cursor-pointer w-[99%] bg-amber-300 flex *:hover:bg-amber-400 items-center  p-2 rounded-md"
-              onClick={() =>
-                handleChatOpen({
-                  receiverUserName: follow.username,
+    <div className="w-full bg-black text-white rounded-xl shadow-sm">
+      {filtered?.map((follow) => (
+        <button
+          key={follow._id}
+          className="w-full flex items-center p-4 space-x-3 hover:bg-gray-50 hover:text-black  cursor-pointer transition-colors border-b border-black text-white last:border-b-0"
+          onClick={() =>
+            handleChatOpen({
+              receiverUserName: follow.username,
+              senderUserName: userInfo.username,
+            })
+          }
+        >
+          {/* Avatar placeholder */}
+          <div className="flex items-center justify-center h-12 w-12 rounded-full bg-gray-200">
+            <span className="text-gray-600 uppercase text-lg">
+              {follow.username[0]}
+            </span>
+          </div>
 
-                  senderUserName: userInfo.username,
-                })
-              }
-            >
-              {follow.username}
-            </button>
-          </>
-        );
-      })}
+          {/* User info */}
+          <div className="text-left">
+            <p className="font-semibold text-sm">{follow.username}</p>
+            {/* If you have additional user info like display name:
+            <p className="text-gray-500 text-sm">@{follow.username}</p> */}
+          </div>
+        </button>
+      ))}
     </div>
   );
 }

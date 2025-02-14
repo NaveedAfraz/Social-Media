@@ -29,7 +29,7 @@ const Posts = ({ feedType }) => {
       url = "http://localhost:3006/api/posts/fetchAllPosts";
       break;
     case "posts":
-      url = `http://localhost:3006/api/posts/fetchUserPosts/${userInfo?.username}`;
+      url = `http://localhost:3006/api/posts/fetchUserPosts/${ProfileUsername}`;
       break;
     case "likes":
       if (feedType === "likes" && userInfo?.username === ProfileUsername) {
@@ -41,6 +41,7 @@ const Posts = ({ feedType }) => {
     default:
       url = "http://localhost:3006/api/posts/fetchAllPosts";
   }
+console.log(ProfileUsername);
 
   const {
     isLoading,
@@ -59,6 +60,8 @@ const Posts = ({ feedType }) => {
       if (!url) {
         return [];
       }
+      console.log("url is ", url);
+      
       const response = await axios.get(url, { withCredentials: true });
       console.log(response);
 
@@ -77,6 +80,7 @@ const Posts = ({ feedType }) => {
     }
   }, [location.pathname, feedType, computedError, refetch]);
   console.log("loading is ", isLoading);
+  console.log("posts are ", POSTS);
 
   return (
     <>
@@ -99,7 +103,12 @@ const Posts = ({ feedType }) => {
       {!isLoading && !isError && POSTS?.length > 0 && (
         <div>
           {POSTS.map((post) => (
-            <Post key={post._id} post={post} feedType={feedType} ProfileUsername={ProfileUsername} />
+            <Post
+              key={post._id}
+              post={post}
+              feedType={feedType}
+              ProfileUsername={ProfileUsername}
+            />
           ))}
         </div>
       )}

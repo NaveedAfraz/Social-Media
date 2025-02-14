@@ -10,9 +10,11 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { isAuth } from "../../redux/authSlice";
 import { FaMessage } from "react-icons/fa6";
+import { ShowChat } from "../../redux/messagesControlSlice";
 const Sidebar = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
   // const data = {
   //   fullName: "John Doe",
   //   username: "johndoe",
@@ -63,6 +65,7 @@ const Sidebar = () => {
     navigate("/login");
   };
   console.log(userInfo);
+  const { isVisbile } = useSelector((state) => state.Chat);
   return (
     <div className="md:flex-[2_2_0]  max-w-64">
       <div className="sticky top-0 left-0 p-3 h-screen flex flex-col border-r border-gray-700 w-20 md:w-full">
@@ -108,6 +111,7 @@ const Sidebar = () => {
             <button
               onClick={() => {
                 navigate(`/messages`);
+                dispatch(ShowChat({ isVisbile: false }));
               }}
               className="flex gap-3 items-center hover:bg-stone-900 transition-all rounded-full duration-300 py-2 pl-2 pr-4 max-w-fit cursor-pointer"
             >

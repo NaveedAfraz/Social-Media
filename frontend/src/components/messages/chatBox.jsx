@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { useSelector } from "react-redux";
+import { useLocation } from "react-router-dom";
+import ChatBoxSkeleton from "../skeleton/chatBoxSkeleton";
 
 function ChatBox({ chatOpen, selectedChat, socket }) {
   const queryClient = useQueryClient();
@@ -42,6 +44,8 @@ function ChatBox({ chatOpen, selectedChat, socket }) {
         `http://localhost:3006/api/Communication/${chatId}/messages`,
         { withCredentials: true }
       );
+      console.log(data);
+
       return data.messages;
     },
     enabled: Boolean(chatId),
@@ -110,24 +114,32 @@ function ChatBox({ chatOpen, selectedChat, socket }) {
       content: newMessage.trim(),
     });
   };
-  console.log(messagesArr);
+
   const lastMessage = messagesArr[messagesArr.length - 1];
 
+  const bottomRef = useRef(null);
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messagesArr]);
+  const { isVisbile } = useSelector((state) => state.Chat);
+  console.log(isVisbile, "isVisbile");
+  console.log(messagesArr, "messagesArr");
+
   return (
-    <div className="flex-[4_4_0] w-full">
-      <div className="text-white text-xl font-bold p-4 w-full bg-amber-300">
+    <div className={`flex-[4_4_0] mr-auto w-full border-gray-700`}>
+      <div className="text-white text-xl font-bold p-4 w-full ">
         {chatOpen && selectedChat
           ? `Chat with ${selectedChat.receiverUserName}`
-          : "Select a chat to start chatting"}
+          : null}
       </div>
+
       {chatOpen && selectedChat && (
-        <div className="p-4">
+        <div className="p-4  overflow-y-auto scroll-auto">
           {isLoading ? (
-            <p>Loading messages...</p>
+            <ChatBoxSkeleton />
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-2 h-[100vh] overflow-y-auto scroll-auto ">
               {messagesArr?.map((msg, index) => {
-               
                 if (
                   index === messagesArr.length - 1 &&
                   !msg?.sender?.username
@@ -162,6 +174,7 @@ function ChatBox({ chatOpen, selectedChat, socket }) {
                   </div>
                 );
               })}
+              <div ref={bottomRef} />
             </div>
           )}
           <div className="mt-4">

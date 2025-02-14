@@ -15,10 +15,7 @@ const RightPanel = () => {
           withCredentials: true,
         }
       );
-
-      // console.log("API Response:", res);
-
-      return res.data.suggested; // Ensure this matches your API response structure
+      return res.data.suggested; 
     },
     onSuccess: (data) => {
       console.log("onSuccess triggered with data:", data);

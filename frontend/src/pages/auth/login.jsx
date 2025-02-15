@@ -15,7 +15,7 @@ function LoginPage() {
       console.log(data);
       try {
         const res = await axios.post(
-          "http://localhost:3006/api/auth/login",
+          "https://social-media-85xj.onrender.com/api/auth/login",
           {
             formData: data,
           },

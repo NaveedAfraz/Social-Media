@@ -14,7 +14,7 @@ const NotificationPage = () => {
     queryFn: async () => {
       try {
         const res = await axios.get(
-          "http://localhost:3006/api/nodification/FetchNodification",
+          "https://social-media-85xj.onrender.com/api/nodification/FetchNodification",
           {
             withCredentials: true,
           }
@@ -49,9 +49,10 @@ const NotificationPage = () => {
       console.log(nodificationOneID);
       let url;
       if (nodificationOneID) {
-        url = `http://localhost:3006/api/nodification/DeleteNodification/${nodificationOneID}`;
+        url = `https://social-media-85xj.onrender.com/api/nodification/DeleteNodification/${nodificationOneID}`;
       } else {
-        url = "http://localhost:3006/api/nodification/DeleteNodification";
+        url =
+          "https://social-media-85xj.onrender.com/api/nodification/DeleteNodification";
       }
       try {
         const response = await axios.delete(url, { withCredentials: true });

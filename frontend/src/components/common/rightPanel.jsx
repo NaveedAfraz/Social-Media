@@ -10,12 +10,12 @@ const RightPanel = () => {
     queryKey: ["suggestedUsers"],
     queryFn: async () => {
       const res = await axios.get(
-        "http://localhost:3006/api/user/suggestedUsers",
+        "https://social-media-85xj.onrender.com/api/user/suggestedUsers",
         {
           withCredentials: true,
         }
       );
-      return res.data.suggested; 
+      return res.data.suggested;
     },
     onSuccess: (data) => {
       console.log("onSuccess triggered with data:", data);

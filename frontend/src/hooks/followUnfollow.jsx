@@ -8,7 +8,7 @@ const useFollow = () => {
     mutationFn: async (userId) => {
       try {
         const res = await axios.post(
-          `http://localhost:3006/api/user/follow/${userId}`,
+          `https://social-media-85xj.onrender.com/api/user/follow/${userId}`,
           {},
           { withCredentials: true }
         );

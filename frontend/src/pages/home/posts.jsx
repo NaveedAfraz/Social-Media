@@ -23,25 +23,26 @@ const Posts = ({ feedType }) => {
   let url;
   switch (feedType) {
     case "following":
-      url = "http://localhost:3006/api/posts/fetchfollowingPost";
+      url =
+        "https://social-media-85xj.onrender.com/api/posts/fetchfollowingPost";
       break;
     case "all":
-      url = "http://localhost:3006/api/posts/fetchAllPosts";
+      url = "https://social-media-85xj.onrender.com/api/posts/fetchAllPosts";
       break;
     case "posts":
-      url = `http://localhost:3006/api/posts/fetchUserPosts/${ProfileUsername}`;
+      url = `https://social-media-85xj.onrender.com/api/posts/fetchUserPosts/${ProfileUsername}`;
       break;
     case "likes":
       if (feedType === "likes" && userInfo?.username === ProfileUsername) {
-        url = `http://localhost:3006/api/posts/fetchLikedPosts/${userInfo?._id}`;
+        url = `https://social-media-85xj.onrender.com/api/posts/fetchLikedPosts/${userInfo?._id}`;
       } else {
         url = undefined; // Not a valid URL when error condition holds.
       }
       break;
     default:
-      url = "http://localhost:3006/api/posts/fetchAllPosts";
+      url = "https://social-media-85xj.onrender.com/api/posts/fetchAllPosts";
   }
-console.log(ProfileUsername);
+  console.log(ProfileUsername);
 
   const {
     isLoading,
@@ -61,7 +62,7 @@ console.log(ProfileUsername);
         return [];
       }
       console.log("url is ", url);
-      
+
       const response = await axios.get(url, { withCredentials: true });
       console.log(response);
 

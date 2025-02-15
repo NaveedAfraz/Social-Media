@@ -31,7 +31,7 @@ const Sidebar = () => {
   } = useMutation({
     mutationFn: async () => {
       const res = await axios.post(
-        "http://localhost:3006/api/auth/logout",
+        "https://social-media-85xj.onrender.com/api/auth/logout",
         {},
         {
           withCredentials: true,

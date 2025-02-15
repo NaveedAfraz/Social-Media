@@ -33,7 +33,7 @@ const EditProfileModal = ({ user }) => {
     mutationFn: async () => {
       try {
         const res = await axios.post(
-          `http://localhost:3006/api/user/updateUser/${user?._id}`,
+          `https://social-media-85xj.onrender.com/api/user/updateUser/${user?._id}`,
           {
             username: formData.username,
             fullName: formData.fullName,

@@ -15,7 +15,7 @@ function AuthReCheck({ children }) {
     queryKey: ["authReCheck"],
     queryFn: async () => {
       const response = await axios.post(
-        "http://localhost:3006/api/auth/authReCheck",
+        "https://social-media-85xj.onrender.com/api/auth/authReCheck",
         {},
         { withCredentials: true }
       );

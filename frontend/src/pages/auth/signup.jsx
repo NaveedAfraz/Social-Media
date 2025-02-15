@@ -29,7 +29,7 @@ function SignupPage() {
 
       try {
         const res = await axios.post(
-          "http://localhost:3006/api/auth/register",
+          "https://social-media-85xj.onrender.com/api/auth/register",
           {
             formData: data,
           },
@@ -110,7 +110,7 @@ function SignupPage() {
               required
               placeholder="Password"
               minLength="1"
-            //  pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
+              //  pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
               title="Must be at least 8 characters, including a number, a lowercase letter, and an uppercase letter"
               className="w-full bg-black text-white pl-10 py-2 border-2  border-gray-700 rounded-3xl  focus:outline-none"
               value={formData.password}
@@ -143,7 +143,7 @@ function SignupPage() {
           >
             {isPending ? "Loading..." : "Sign up"}
           </button>
-          
+
           {/* {isError && <p className="text-red-500">{error.message}</p>}
           {isSuccess && <p>Registration successful! Welcome aboard.</p>} */}
         </form>
@@ -161,7 +161,11 @@ function SignupPage() {
             <div className="alert alert-info">
               <span>
                 {isSuccess && <p>Registration successful! Welcome aboard.</p>}
-                {isError && <p className="text-red-400 font-bold text-sm">{error.message}</p>}
+                {isError && (
+                  <p className="text-red-400 font-bold text-sm">
+                    {error.message}
+                  </p>
+                )}
               </span>
             </div>
           </div>

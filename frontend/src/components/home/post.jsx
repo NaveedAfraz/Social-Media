@@ -16,10 +16,26 @@ const Post = ({ post, ProfileUsername, feedType }) => {
   const isLiked = post?.likes.includes(userInfo?._id);
   const isMyPost = userInfo?._id === post?.user?._id;
   console.log(post);
+  console.log(post.updatedAt, "updatedAt");
 
-  const formattedDate = post.updatedAt
-    ? new Date(post.updatedAt).toLocaleDateString()
-    : "";
+  const formatDate = (isoDate) => {
+    if (!isoDate) return "";
+
+    const date = new Date(isoDate);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMinutes / 60);
+
+    if (diffHours < 24) {
+      return diffHours > 0 ? `${diffHours}h ago` : `${diffMinutes}m ago`;
+    } else {
+      return date.toLocaleDateString();
+    }
+  };
+
+  // Usage:
+  const formattedDate = post.updatedAt ? formatDate(post.updatedAt) : "";
 
   const isCommenting = false;
   const queryClient = useQueryClient();

@@ -14,15 +14,9 @@ const {
 const router = express.Router();
 
 router.get("/fetchAllPosts", fetchAllPosts);
-router.get("/fetchfollowingPost", protectedRoute, fetchfollowingPost);
-
-
-
+router.get("/fetchfollowingPost", protectedRoute, fetchfollowingPost)
 router.get("/fetchUserPosts/:username", protectedRoute, fetchUserPosts);
 router.get("/fetchLikedPosts/:id", protectedRoute, fetchLikedPosts);
-
-
-
 router.post("/createPost", protectedRoute, CreatePost);
 router.post("/likes/:id", protectedRoute, likeUnlikePost);
 router.post("/comment/:id", protectedRoute, commentPost);

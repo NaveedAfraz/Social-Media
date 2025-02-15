@@ -233,6 +233,7 @@ const fetchLikedPosts = async (req, res) => {
 
     const likedposts = await post
       .find({ _id: { $in: userData.likedPosts } })
+      .sort({ createdAt: -1 })
       .populate("user")
       .populate("comments");
 
@@ -306,6 +307,9 @@ const fetchUserPosts = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
+
+
 module.exports = {
   CreatePost,
   commentPost,

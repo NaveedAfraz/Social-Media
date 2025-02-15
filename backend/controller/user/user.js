@@ -262,9 +262,26 @@ const updateUserProfile = async (req, res) => {
   }
 };
 
+// const fetchFollowedAndfollowingUsers = async (req, res) => {
+//   const { userid } = req.params;
+//   console.log(userid);
+
+//   try {
+//     if (!userid) {
+//       return res.status(400).json({ message: "User ID is required" });
+//     }
+
+    
+
+//   } catch (error) {
+//     console.log(error);
+//     return res.status(500).json({ message: error.message });
+//   }
+// };
 module.exports = {
   getUserProfile,
   followUnfollowUserProfile,
   getSuggestedUsers,
   updateUserProfile,
+  // fetchFollowedAndfollowingUsers,
 };

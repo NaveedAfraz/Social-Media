@@ -13,12 +13,13 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import useFollow from "../../hooks/followUnfollow";
+import ShowfollowersModal from "../../components/profile/Showfollowers";
 
 const ProfilePage = () => {
   const [coverImg, setCoverImg] = useState(null);
   const [profileImg, setProfileImg] = useState(null);
   const [feedType, setFeedType] = useState("posts");
-
+  const [showFollowing, setShowFollowing] = useState("");
   const coverImgRef = useRef(null);
   const profileImgRef = useRef(null);
 
@@ -128,8 +129,15 @@ const ProfilePage = () => {
   );
   console.log(amIFollowing);
   const [expanded, setExpanded] = useState(false);
+  // console.log(showFollowing);
 
   const { follow, isPending } = useFollow();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const handleShowFollowing = (e) => {
+    console.log(e);
+    setShowFollowing(e);
+    setIsModalOpen(true);
+  };
   return (
     <>
       <div className="flex-[4_4_0]  border-r border-gray-700 min-h-screen">
@@ -268,18 +276,28 @@ const ProfilePage = () => {
                     </span>
                   </div>
                 </div>
-                <div className="flex gap-2">
-                  <div className="flex gap-1 items-center">
+                <div className="flex gap-2 cursor-pointer">
+                  <div className="flex gap-1 items-center cursor-pointer">
                     <span className="font-bold text-xs">
                       {user?.following?.length}
                     </span>
-                    <span className="text-slate-500 text-xs">Following</span>
+                    <button
+                      onClick={() => handleShowFollowing("following")}
+                      className="text-slate-500 text-xs cursor-pointer"
+                    >
+                      Following
+                    </button>
                   </div>
-                  <div className="flex gap-1 items-center">
-                    <span className="font-bold text-xs">
+                  <div className="flex gap-1 items-center cursor-pointer">
+                    <span className="font-bold text-xs ">
                       {user?.followers?.length}
                     </span>
-                    <span className="text-slate-500 text-xs">Followers</span>
+                    <button
+                      onClick={() => handleShowFollowing("followers")}
+                      className="text-slate-500 text-xs cursor-pointer"
+                    >
+                      Followers
+                    </button>
                   </div>
                 </div>
               </div>
@@ -307,6 +325,13 @@ const ProfilePage = () => {
           )}
 
           <Posts feedType={feedType} />
+          {showFollowing && (
+            <ShowfollowersModal
+              isModalOpen={isModalOpen}
+              setIsModalOpen={setIsModalOpen}
+              user={user[showFollowing]}
+            />
+          )}
         </div>
       </div>
     </>

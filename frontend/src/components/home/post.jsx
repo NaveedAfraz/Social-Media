@@ -45,7 +45,7 @@ const Post = ({ post, ProfileUsername, feedType }) => {
 
       try {
         const res = await axios.delete(
-          `https://social-media-85xj.onrender.com/api/posts/deletePost/${id}`,
+          `${process.env.BACKEND_URL}/api/posts/deletePost/${id}`,
           {
             withCredentials: true,
           }
@@ -74,7 +74,7 @@ const Post = ({ post, ProfileUsername, feedType }) => {
     mutationFn: async ({ id }) => {
       try {
         const res = await axios.post(
-          `https://social-media-85xj.onrender.com/api/posts/likes/${id}`,
+          `${process.env.BACKEND_URL}/api/posts/likes/${id}`,
           {},
           { withCredentials: true }
         );
@@ -123,7 +123,7 @@ const Post = ({ post, ProfileUsername, feedType }) => {
 
       try {
         const commentRes = await axios.post(
-          `https://social-media-85xj.onrender.com/api/posts/comment/${id}`,
+          `${process.env.BACKEND_URL}/api/posts/comment/${id}`,
           {
             text: comment,
           },

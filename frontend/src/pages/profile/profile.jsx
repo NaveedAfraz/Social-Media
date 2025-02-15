@@ -37,7 +37,7 @@ const ProfilePage = () => {
       console.log("refetching3");
       try {
         const res = await axios.get(
-          `https://social-media-85xj.onrender.com/api/user/getUser/${
+          `${process.env.BACKEND_URL}/api/user/getUser/${
             location.pathname.split("/")[2]
           }`,
           {
@@ -87,7 +87,7 @@ const ProfilePage = () => {
     mutationFn: async () => {
       try {
         const res = await axios.post(
-          `https://social-media-85xj.onrender.com/api/user/updateUser/${user?._id}`,
+          `${process.env.BACKEND_URL}/api/user/updateUser/${user?._id}`,
           {
             profileImg,
             coverImg,

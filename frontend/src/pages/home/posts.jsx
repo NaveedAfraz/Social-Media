@@ -23,24 +23,23 @@ const Posts = ({ feedType }) => {
   let url;
   switch (feedType) {
     case "following":
-      url =
-        "https://social-media-85xj.onrender.com/api/posts/fetchfollowingPost";
+      url = `${process.env.BACKEND_URL}/api/posts/fetchfollowingPost`;
       break;
     case "all":
-      url = "https://social-media-85xj.onrender.com/api/posts/fetchAllPosts";
+      url = `${process.env.BACKEND_URL}/api/posts/fetchAllPosts`;
       break;
     case "posts":
-      url = `https://social-media-85xj.onrender.com/api/posts/fetchUserPosts/${ProfileUsername}`;
+      url = `${process.env.BACKEND_URL}/api/posts/fetchUserPosts/${ProfileUsername}`;
       break;
     case "likes":
       if (feedType === "likes" && userInfo?.username === ProfileUsername) {
-        url = `https://social-media-85xj.onrender.com/api/posts/fetchLikedPosts/${userInfo?._id}`;
+        url = `${process.env.BACKEND_URL}/api/posts/fetchLikedPosts/${userInfo?._id}`;
       } else {
         url = undefined; // Not a valid URL when error condition holds.
       }
       break;
     default:
-      url = "https://social-media-85xj.onrender.com/api/posts/fetchAllPosts";
+      url = `${process.env.BACKEND_URL}/api/posts/fetchAllPosts`;
   }
   console.log(ProfileUsername);
 

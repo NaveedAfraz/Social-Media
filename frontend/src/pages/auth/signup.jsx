@@ -29,7 +29,7 @@ function SignupPage() {
 
       try {
         const res = await axios.post(
-          "https://social-media-85xj.onrender.com/api/auth/register",
+          `${process.env.BACKEND_URL}/api/auth/register`,
           {
             formData: data,
           },

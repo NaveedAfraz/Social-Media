@@ -21,7 +21,7 @@ const CreatePost = () => {
       console.log("img", img);
 
       const res = await axios.post(
-        "https://social-media-85xj.onrender.com/api/posts/createPost",
+        "/api/posts/createPost",
         {
           text,
           img,

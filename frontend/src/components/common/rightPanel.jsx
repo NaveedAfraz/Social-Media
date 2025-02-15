@@ -10,7 +10,7 @@ const RightPanel = () => {
     queryKey: ["suggestedUsers"],
     queryFn: async () => {
       const res = await axios.get(
-        "https://social-media-85xj.onrender.com/api/user/suggestedUsers",
+        `${process.env.BACKEND_URL}/api/user/suggestedUsers`,
         {
           withCredentials: true,
         }

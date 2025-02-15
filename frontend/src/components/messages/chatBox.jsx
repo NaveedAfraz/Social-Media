@@ -19,7 +19,7 @@ function ChatBox({ chatOpen, selectedChat, socket }) {
   const startChatMutation = useMutation({
     mutationFn: async ({ senderUsername, receiverUsername }) => {
       const { data } = await axios.post(
-        `https://social-media-85xj.onrender.com/api/Communication/startChat`,
+        `${process.env.BACKEND_URL}/api/Communication/startChat`,
         { senderUsername, receiverUsername },
         { withCredentials: true }
       );
@@ -41,7 +41,7 @@ function ChatBox({ chatOpen, selectedChat, socket }) {
     queryKey: ["messages", chatId],
     queryFn: async () => {
       const { data } = await axios.get(
-        `https://social-media-85xj.onrender.com/api/Communication/${chatId}/messages`,
+        `${process.env.BACKEND_URL}/api/Communication/${chatId}/messages`,
         { withCredentials: true }
       );
       console.log(data);
@@ -56,7 +56,7 @@ function ChatBox({ chatOpen, selectedChat, socket }) {
   const sendMessageMutation = useMutation({
     mutationFn: async ({ chatId, content }) => {
       const { data } = await axios.post(
-        `https://social-media-85xj.onrender.com/api/Communication/sendMessage/${senderUser}`,
+        `${process.env.BACKEND_URL}/api/Communication/sendMessage/${senderUser}`,
         { chatId, content },
         { withCredentials: true }
       );

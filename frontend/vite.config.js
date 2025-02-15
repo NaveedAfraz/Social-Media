@@ -6,4 +6,7 @@ export default defineConfig({
   build: {
     outDir: "dist", // Ensure this is set correctly
   },
+  server: {
+    historyApiFallback: true
+  }
 });

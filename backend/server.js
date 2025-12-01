@@ -41,11 +41,6 @@ io.on("connection", (socket) => {
   });
 });
 
-app.use(
-  "/assets",
-  express.static(path.join(__dirname, "../frontend/dist/assets"))
-);
-
 const fs = require("fs");
 app.get("/list-files", (req, res) => {
   const distPath = path.join(__dirname, "../frontend/dist");
@@ -89,27 +84,6 @@ app.use("/api/*", (req, res, next) => {
 });
 
 console.log("Routes registered");
-
-app.get('/*', function(req, res) {
-  // Don't serve index.html for API routes or asset requests
-  if (req.url.startsWith('/api') || req.url.startsWith('/assets')) {
-      return res.status(404).send('Not found');
-  }
-  
-  try {
-      res.sendFile(path.join(__dirname, '../frontend/dist/index.html'), function(err) {
-          if (err) {
-              console.error('Error sending index.html:', err);
-              res.status(500).send('Error loading page');
-          }
-      });
-  } catch (error) {
-      console.error('Error in catch block:', error);
-      res.status(500).send('Server error');
-  }
-});
-console.log('Attempted path:', path.join(__dirname, '../frontend/dist/index.html'));
-
 const port = process.env.PORT;
 server.listen(port, () => {
   console.log(`Server is running on port ${port}`);

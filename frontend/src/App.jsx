@@ -19,6 +19,7 @@ import { useSelector } from "react-redux";
 import Messages from "./pages/messages/messages";
 import { ToastProvider } from "./components/ui/ToastContainer";
 import AuthLayout from "./components/auth/AuthLayout";
+import { Analytics } from "@vercel/analytics/react"
 function App() {
   const { userInfo, isAuthenticated } = useSelector((state) => state.auth);
   console.log(userInfo);
@@ -40,14 +41,10 @@ function App() {
     }
   }, [])
   console.log(isAuthenticated)
-  // Redirect unauthenticated users to login
-  useEffect(() => {
-    if (!isAuthenticated && !isPublicRoute) {
-      navigate("/login");
-    }
-  }, [isAuthenticated, isPublicRoute, navigate]);
+ 
   return (
     <ToastProvider>
+      <Analytics />
       <div className="flex">
         {!isPublicRoute && <Sidebar />}
         <Routes>

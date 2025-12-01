@@ -71,7 +71,7 @@ function ShowfollowersModal({ isModalOpen, setIsModalOpen, user }) {
                         // Add follow/unfollow logic here
                       }}
                     >
-                      Follow
+                      Unfollow
                     </button>
                   </div>
                 </div>

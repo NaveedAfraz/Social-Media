@@ -21,7 +21,7 @@ const CreatePost = () => {
       console.log("img", img);
 
       const res = await axios.post(
-        "/api/posts/createPost",
+        `${import.meta.env.VITE_BACKEND_URL}/api/posts/createPost`,
         {
           text,
           img,

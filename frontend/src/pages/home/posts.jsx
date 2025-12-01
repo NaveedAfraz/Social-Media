@@ -16,7 +16,7 @@ const Posts = ({ feedType }) => {
   // Compute error immediately based on feedType, userInfo, and username.
   const computedError =
     feedType === "likes" && userInfo?.username !== ProfileUsername
-      ? "Cannot fetch liked posts for this user at the moment"
+      ? "You can only view liked posts on your own profile"
       : "";
 
   // Set the URL based on feedType.
@@ -32,10 +32,11 @@ const Posts = ({ feedType }) => {
       url = `${import.meta.env.VITE_BACKEND_URL}/api/posts/fetchUserPosts/${ProfileUsername}`;
       break;
     case "likes":
-      if (feedType === "likes" && userInfo?.username === ProfileUsername) {
+      // Only show liked posts for the authenticated user's own profile
+      if (userInfo?.username === ProfileUsername) {
         url = `${import.meta.env.VITE_BACKEND_URL}/api/posts/fetchLikedPosts/${userInfo?._id}`;
       } else {
-        url = undefined; // Not a valid URL when error condition holds.
+        url = undefined; // Not allowed to view other users' liked posts
       }
       break;
     default:

@@ -55,7 +55,10 @@ app.get("/list-files", (req, res) => {
   });
 });
 
- 
+// Simple health check route
+app.get("/api/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
 
 // console.log(process.env.MONGODB_URL);
 const authRoutes = require("./routes/auth/auth");

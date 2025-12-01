@@ -3,7 +3,7 @@ import { useSelector } from "react-redux";
 
 function ChatList({ handleChatOpen, filtered }) {
   const { userInfo } = useSelector((state) => state.auth);
-
+  console.log(filtered)
   return (
     <div className="w-full bg-black text-white rounded-xl shadow-sm">
       {filtered?.map((follow) => (
@@ -14,14 +14,25 @@ function ChatList({ handleChatOpen, filtered }) {
             handleChatOpen({
               receiverUserName: follow.username,
               senderUserName: userInfo.username,
+              receiverProfile: follow,
             })
           }
         >
-          {/* Avatar placeholder */}
-          <div className="flex items-center justify-center h-12 w-12 rounded-full bg-gray-200">
-            <span className="text-gray-600 uppercase text-lg">
-              {follow.username[0]}
-            </span>
+          {/* Avatar */}
+          <div className="flex items-center justify-center h-12 w-12 rounded-full">
+            {follow.profileImg ? (
+              <img 
+                src={follow.profileImg} 
+                alt={follow.username}
+                className="w-12 h-12 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                <span className="text-white font-bold text-lg">
+                  {follow.username[0].toUpperCase()}
+                </span>
+              </div>
+            )}
           </div>
 
           {/* User info */}

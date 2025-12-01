@@ -10,7 +10,7 @@ const RightPanel = () => {
     queryKey: ["suggestedUsers"],
     queryFn: async () => {
       const res = await axios.get(
-        `${process.env.BACKEND_URL}/api/user/suggestedUsers`,
+        `${import.meta.env.VITE_BACKEND_URL}/api/user/suggestedUsers`,
         {
           withCredentials: true,
         }
@@ -59,7 +59,15 @@ const RightPanel = () => {
                 <div className="flex gap-2 items-center">
                   <div className="avatar">
                     <div className="w-8 rounded-full">
-                      <img src={user.profileImg || "/avatar-placeholder.png"} />
+                      {user.profileImg ? (
+                        <img src={user.profileImg} alt={user.username} />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                          <span className="text-white font-bold text-sm">
+                            {user.username?.[0]?.toUpperCase()}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div className="flex flex-col">

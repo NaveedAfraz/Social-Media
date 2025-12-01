@@ -18,6 +18,7 @@ import ShowfollowersModal from "../../components/profile/Showfollowers";
 const ProfilePage = () => {
   const [coverImg, setCoverImg] = useState(null);
   const [profileImg, setProfileImg] = useState(null);
+  const [isUpdatingImages, setIsUpdatingImages] = useState(false);
   const [feedType, setFeedType] = useState("posts");
   const [showFollowing, setShowFollowing] = useState("");
   const coverImgRef = useRef(null);
@@ -34,17 +35,16 @@ const ProfilePage = () => {
   } = useQuery({
     queryKey: ["userProfile"],
     queryFn: async () => {
-      console.log("refetching3");
+      // Fetching user profile data
       try {
         const res = await axios.get(
-          `${process.env.BACKEND_URL}/api/user/getUser/${
-            location.pathname.split("/")[2]
+          `${import.meta.env.VITE_BACKEND_URL}/api/user/getUser/${location.pathname.split("/")[2]
           }`,
           {
             withCredentials: true,
           }
         );
-        console.log(res);
+        // User profile data received
         return res.data.User;
       } catch (error) {
         throw new Error(error);
@@ -54,16 +54,14 @@ const ProfilePage = () => {
   });
 
   const queryClient = useQueryClient();
-
+console.log(user,"..")
   useEffect(() => {
     queryClient.invalidateQueries(["userProfile"]);
-
-    console.log("refetching2");
+    // Refetching user data on route change
     refetch();
   }, [location.pathname]);
 
   const isMyProfile = user?._id === userInfo?._id;
-  // console.log(userInfo);
 
   const handleImgChange = (e, state) => {
     const file = e.target.files[0];
@@ -76,65 +74,65 @@ const ProfilePage = () => {
       reader.readAsDataURL(file);
     }
   };
-  const POSTS = [];
+  // Get user posts from the user data
+  const POSTS = user?.posts || [];
 
   const {
     isError,
     isSuccess,
-    isLoading: isUpdating,
+    isLoading: isUpdating = false,
     mutate: updateProfile,
+    mutateAsync: updateProfileAsync,
   } = useMutation({
+    mutationKey: ["updateProfileImages"],
     mutationFn: async () => {
       try {
         const res = await axios.post(
-          `${process.env.BACKEND_URL}/api/user/updateUser/${user?._id}`,
+          `${import.meta.env.VITE_BACKEND_URL}/api/user/updateUser/${user?._id}`,
           {
             profileImg,
             coverImg,
           },
           { withCredentials: true }
         );
-        console.log(res);
+        // Profile update successful
         return res.data;
       } catch (error) {
-        console.log(error);
+        // Profile update error logged
         throw new Error(error);
       }
     },
     onSuccess: (data) => {
-      console.log(data);
+      // Profile update successful - invalidating queries
       queryClient.invalidateQueries(["userProfile"]);
       queryClient.invalidateQueries(["userInfo"]);
       setCoverImg("");
       setProfileImg("");
-      setBio("");
-      setFullName("");
     },
     onError: (error) => {
-      console.log(error);
+      // Profile update error occurred
     },
   });
 
-  console.log(user);
+  // User data loaded successfully
 
-  const handleProfileUpdate = () => {
-    console.log("updating profile");
-    updateProfile();
+  const handleProfileUpdate = async () => {
+    setIsUpdatingImages(true);
+    try {
+      await updateProfileAsync();
+    } finally {
+      setIsUpdatingImages(false);
+    }
   };
-
-  console.log(userInfo);
-
   const amIFollowing = user?.followers?.some(
     (val) => val?.username === userInfo?.username
   );
-  console.log(amIFollowing);
+  // Following state calculated
   const [expanded, setExpanded] = useState(false);
-  // console.log(showFollowing);
 
   const { follow, isPending } = useFollow();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const handleShowFollowing = (e) => {
-    console.log(e);
     setShowFollowing(e);
     setIsModalOpen(true);
   };
@@ -164,7 +162,7 @@ const ProfilePage = () => {
               <div className="relative group/cover">
                 <img
                   src={coverImg || user?.coverImg || "/cover.png"}
-                  className="h-64 w-full object-cover"
+                  className="h-[30vh] w-full object-fit"
                   alt="cover image"
                 />
                 {isMyProfile && (
@@ -227,7 +225,7 @@ const ProfilePage = () => {
                     className="btn btn-primary rounded-full btn-sm text-white px-4 ml-2"
                     onClick={() => handleProfileUpdate()}
                   >
-                    {isUpdating ? "Updating..." : "Update"}
+                    {isUpdatingImages ? "Updating..." : "Update"}
                   </button>
                 )}
               </div>

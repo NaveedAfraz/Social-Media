@@ -119,14 +119,52 @@ const logout = async (req, res) => {
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
+const enrichFollowData = async (connections = []) => {
+  const usernames = connections
+    ?.map((connection) => connection?.username)
+    .filter(Boolean);
 
+  if (!usernames?.length) return connections || [];
+
+  const profiles = await user
+    .find({ username: { $in: usernames } })
+    .select("username profileImg coverImg bio")
+    .lean();
+
+  const profileMap = new Map(
+    profiles.map((profile) => [profile.username, profile])
+  );
+
+  return connections.map((connection) => {
+    const profile = profileMap.get(connection.username) || {};
+    return {
+      ...connection,
+      profileImg: profile.profileImg || "",
+      coverImg: profile.coverImg || "",
+      bio: profile.bio || "",
+    };
+  });
+};
 const authReCheck = async (req, res) => {
   try {
-    const User = await user.findById(req.User._id).select("-password");
-    if (!User) {
+    const userData = await user.findById(req.User._id).select("-password").lean();
+    console.log("user is this ", userData);
+
+    if (!userData) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const [followers, following] = await Promise.all([
+      enrichFollowData(userData.followers),
+      enrichFollowData(userData.following),
+    ]);
+
+    const UserDetails = { ...userData, followers, following };
+    console.log(UserDetails);
+    if (!UserDetails) {
       return res.status(400).json({ error: "User does not exist" });
     } else {
-      return res.status(200).json({ success: true, user: User });
+      return res.status(200).json({ UserDetails });
     }
   } catch (error) {
     console.log(error);

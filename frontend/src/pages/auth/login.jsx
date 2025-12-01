@@ -7,15 +7,17 @@ import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { useDispatch } from "react-redux";
 import { isAuth } from "../../redux/authSlice";
+import { useToast } from "../../components/ui/ToastContainer";
 function LoginPage() {
   const [formdata, setFormData] = useState({ email: "", password: "" });
   const dispatch = useDispatch();
+  const { toastSuccess, toastError } = useToast();
   const { isPending, isError, isSuccess, mutate, error } = useMutation({
     mutationFn: async (data) => {
       console.log(data);
       try {
         const res = await axios.post(
-          `${process.env.BACKEND_URL}/api/auth/login`,
+          `${import.meta.env.VITE_BACKEND_URL}/api/auth/login`,
           {
             formData: data,
           },
@@ -23,20 +25,25 @@ function LoginPage() {
             withCredentials: true,
           }
         );
-        // console.log(res);
-
+        console.log("Login success response:", res.data);
         return res.data;
       } catch (error) {
-        console.log(error);
+        console.log("Login error in mutationFn:", error);
+        // Re-throw the error so onError callback is triggered
+        throw error;
       }
     },
     onSuccess: (data) => {
-      console.log(data);
+      console.log("Login response data:", data);
+      toastSuccess("Login successful!");
       dispatch(isAuth(data));
     },
 
     onError: (error) => {
-      console.log(error);
+      console.log("Login error:", error);
+      // Show error message from response if available, otherwise show generic error
+      const errorMessage = error.response?.data?.error || error.message || "Login failed";
+      toastError(errorMessage);
     },
   });
 
@@ -53,9 +60,9 @@ function LoginPage() {
   return (
     <div className="max-w-screen-xl mx-auto flex h-screen">
       {/* Left Section: Only visible on large screens */}
-      <div className="flex-1 hidden lg:flex items-center justify-center">
+      {/* <div className="flex-1 hidden lg:flex items-center justify-center">
         <img src={XLogo} alt="xlogo" className="max-w-full  h-[60%]" />
-      </div>
+      </div> */}
 
       {/* Right Section: Form & Small Logo for mobile */}
       <div className="flex-1 flex flex-col justify-center items-center p-4">

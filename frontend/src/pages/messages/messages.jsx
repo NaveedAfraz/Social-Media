@@ -13,7 +13,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { socket } from "../../socket";
 import { useDispatch, useSelector } from "react-redux";
 import { ShowChat } from "../../redux/messagesControlSlice";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 function Messages() {
   const [selectedChat, setSelectedChat] = useState(null);
   const [chatOpen, setChatOpen] = useState(false);
@@ -21,7 +21,18 @@ function Messages() {
   const { isVisbile } = useSelector((state) => state.Chat);
   const dispatch = useDispatch();
   const naviagte = useNavigate();
-  const handleChatOpen = ({ receiverUserName, senderUserName }) => {
+  const location = useLocation();
+  
+  useEffect(() => {
+    // Check if we're on the main messages page (no username in URL)
+    if (location.pathname === '/messages') {
+      // Reset chat state when going back to main messages page
+      setChatOpen(false);
+      setSelectedChat(null);
+      dispatch(ShowChat({ isVisbile: false }));
+    }
+  }, [location.pathname, dispatch]);
+  const handleChatOpen = ({ receiverUserName, senderUserName, receiverProfile }) => {
     setChatOpen(true);
 
     const data = {
@@ -30,7 +41,7 @@ function Messages() {
     };
     console.log(data);
     naviagte(`/messages/${receiverUserName}`);
-    setSelectedChat(data);
+    setSelectedChat({ ...data, receiverProfile });
     dispatch(ShowChat({ isVisbile: !isVisbile }));
   };
 
@@ -49,8 +60,10 @@ function Messages() {
   const [filteredFollowing, setFilteredFollowing] = useState([]);
   useEffect(() => {
     if (userInfo?.following) {
+      console.log(userInfo)
       const results = userInfo.following.filter((user) =>
         user.username.toLowerCase().includes(searchQuery.toLowerCase())
+
       );
       setFilteredFollowing(results);
     }
@@ -59,29 +72,42 @@ function Messages() {
   return (
     <>
       <div
-        className={`${
-          !isVisbile ? "block" : "hidden"
-        } flex-[4_4_0] mr-auto w-full border-gray-700 min-h-screen`}
+        className={`${!isVisbile ? "flex" : "hidden"
+          } flex-[4_4_0] flex-col border-r border-gray-700 min-h-screen bg-black`}
       >
-        <div className="flex items-center  p-4 border-b border-gray-700">
-          <h2 className="text-2xl font-bold mb-4 pl-10 mt-2.5 text-white">
-            Messages
-          </h2>
-          <IoSettings className="text-white text-2xl cursor-pointer  mx-2.5 float-right ml-auto" />
-          <BiSolidMessageSquareAdd className="text-white text-2xl cursor-pointer" />
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-700">
+          <h1 className="text-xl font-bold text-white">Messages</h1>
+          <div className="flex items-center gap-3">
+            <button className="p-2 hover:bg-gray-900 rounded-full transition-colors duration-200">
+              <BiSolidMessageSquareAdd className="w-5 h-5 text-white" />
+            </button>
+            <button className="p-2 hover:bg-gray-900 rounded-full transition-colors duration-200">
+              <IoSettings className="w-5 h-5 text-white" />
+            </button>
+          </div>
         </div>
-        <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
-        <ChatList
-          filtered={filteredFollowing}
-          handleChatOpen={handleChatOpen}
-          setSelectedChat={setSelectedChat}
-        />
+
+        {/* Search */}
+        <div className="p-4">
+          <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+        </div>
+
+        {/* Chat List */}
+        <div className="flex-1 overflow-y-auto">
+          <ChatList
+            filtered={filteredFollowing}
+            handleChatOpen={handleChatOpen}
+            setSelectedChat={setSelectedChat}
+          />
+        </div>
       </div>
       {isVisbile && (
         <ChatBox
           chatOpen={chatOpen}
           selectedChat={selectedChat}
           socket={socket}
+          receiverProfile={selectedChat?.receiverProfile}
         />
       )}
     </>

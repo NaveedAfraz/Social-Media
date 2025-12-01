@@ -4,14 +4,16 @@ import { FaRegHeart } from "react-icons/fa";
 import { FaRegBookmark } from "react-icons/fa6";
 import { FaTrash } from "react-icons/fa";
 import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
+import { useToast } from "../ui/ToastContainer";
 import { useSelector } from "react-redux";
 
 const Post = ({ post, ProfileUsername, feedType }) => {
   const [comment, setComment] = useState("");
   const { userInfo } = useSelector((state) => state.auth);
+  const { toastError } = useToast();
   const postOwner = post?.user;
   const isLiked = post?.likes.includes(userInfo?._id);
   const isMyPost = userInfo?._id === post?.user?._id;
@@ -45,7 +47,7 @@ const Post = ({ post, ProfileUsername, feedType }) => {
 
       try {
         const res = await axios.delete(
-          `${process.env.BACKEND_URL}/api/posts/deletePost/${id}`,
+          `${import.meta.env.VITE_BACKEND_URL}/api/posts/deletePost/${id}`,
           {
             withCredentials: true,
           }
@@ -58,7 +60,7 @@ const Post = ({ post, ProfileUsername, feedType }) => {
       }
     },
     onError: (error) => {
-      console.log(error);
+      toastError(error.message || "Please login to like posts");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["posts"] });
@@ -74,7 +76,7 @@ const Post = ({ post, ProfileUsername, feedType }) => {
     mutationFn: async ({ id }) => {
       try {
         const res = await axios.post(
-          `${process.env.BACKEND_URL}/api/posts/likes/${id}`,
+          `${import.meta.env.VITE_BACKEND_URL}/api/posts/likes/${id}`,
           {},
           { withCredentials: true }
         );
@@ -89,7 +91,7 @@ const Post = ({ post, ProfileUsername, feedType }) => {
       }
     },
     onError: (error) => {
-      console.log(error);
+      toastError(error.message || "Please login to like posts");
     },
     onSuccess: (resData) => {
       console.log("success");
@@ -123,7 +125,7 @@ const Post = ({ post, ProfileUsername, feedType }) => {
 
       try {
         const commentRes = await axios.post(
-          `${process.env.BACKEND_URL}/api/posts/comment/${id}`,
+          `${import.meta.env.VITE_BACKEND_URL}/api/posts/comment/${id}`,
           {
             text: comment,
           },

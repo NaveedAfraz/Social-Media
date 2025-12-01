@@ -4,6 +4,7 @@ import {
   Routes,
   Route,
   useNavigate,
+  useLocation
 } from "react-router-dom";
 import Home from "./pages/home/home";
 import Login from "./pages/auth/login";
@@ -15,43 +16,56 @@ import ProfilePage from "./pages/profile/profile";
 import AuthReCheck from "./components/auth/authreCheck";
 import { useSelector } from "react-redux";
 import Messages from "./pages/messages/messages";
+import { ToastProvider } from "./components/ui/ToastContainer";
+import AuthLayout from "./components/auth/AuthLayout";
 function App() {
   const { userInfo } = useSelector((state) => state.auth);
   console.log(userInfo);
   const navigate = useNavigate();
+  const location = useLocation()
   useEffect(() => {
     if (userInfo && window.location.pathname === "/login") {
       navigate("/home");
       console.log("navigated to home");
     }
   }, [userInfo, navigate]);
+
   const isPublicRoute = ["/login", "/signup"].includes(location.pathname);
 
+  useEffect(() => {
+    if (location.pathname == "/") {
+      navigate("/home")
+    }
+  }, [])
   return (
-    <div className="flex">
-      {!isPublicRoute && <Sidebar />}
-      <Routes>
-        {/* <Route element={<Authrecheck/>}> */}
-        <Route path="/login" element={<Login />}></Route>
-        <Route path="/signUp" element={<SignUp />}></Route>
-        {/* </Route> */}
-
-        <Route element={<AuthReCheck />}>
-          <Route path="/home" element={<Home />}></Route>
-          <Route path="/notifications" element={<NotificationPage />} />
-          <Route path="/profile/:username" element={<ProfilePage />} />
-          <Route path="/messages" element={<Messages />}>
-           <Route path=":username" element={<Messages />} />
+    <ToastProvider>
+      <div className="flex">
+        {!isPublicRoute && <Sidebar />}
+        <Routes>
+          <Route path="/login" element={<AuthLayout />}>
+            <Route index element={<Login />} />
           </Route>
-        </Route>
-      </Routes>
-      {!isPublicRoute && !location.pathname.includes("messages") && (
-        <RightPanel />
-      )}
+          <Route path="/signUp" element={<AuthLayout />}>
+            <Route index element={<SignUp />} />
+          </Route>
 
-      {/* <Route path="/" element={<Navigate to="/home" replace />} />
+          <Route element={<AuthReCheck />}>
+            <Route path="/home" element={<Home />}></Route>
+            <Route path="/notifications" element={<NotificationPage />} />
+            <Route path="/profile/:username" element={<ProfilePage />} />
+            <Route path="/messages" element={<Messages />}>
+              <Route path=":username" element={<Messages />} />
+            </Route>
+          </Route>
+        </Routes>
+        {!isPublicRoute && !location.pathname.includes("messages") && (
+          <RightPanel />
+        )}
+
+        {/* <Route path="/" element={<Navigate to="/home" replace />} />
       <Route path="*" element={<Navigate to="/login" replace />} /> */}
-    </div>
+      </div>
+    </ToastProvider>
   );
 }
 

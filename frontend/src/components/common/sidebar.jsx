@@ -31,7 +31,7 @@ const Sidebar = () => {
   } = useMutation({
     mutationFn: async () => {
       const res = await axios.post(
-        `${process.env.BACKEND_URL}/api/auth/logout`,
+        `${import.meta.env.VITE_BACKEND_URL}/api/auth/logout`,
         {},
         {
           withCredentials: true,

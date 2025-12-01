@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { IoCloseSharp } from "react-icons/io5";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
+import { useSelector } from "react-redux";
 
 const CreatePost = () => {
   const [text, setText] = useState("");
@@ -11,9 +12,8 @@ const CreatePost = () => {
   // const dispatch = useDispatch();
   const imgRef = useRef(null);
 
-  const data = {
-    profileImg: "/avatars/boy1.png",
-  };
+  const { userInfo } = useSelector((state) => state.auth);
+  const profileImage = userInfo?.profileImg || "/avatar-placeholder.png";
   const queryClient = useQueryClient();
   const { isError, isPending, mutate } = useMutation({
     mutationFn: async () => {
@@ -58,12 +58,11 @@ const CreatePost = () => {
       reader.readAsDataURL(file);
     }
   };
-
   return (
     <div className="flex p-4 items-start gap-4 border-b border-gray-700">
       <div className="avatar">
         <div className="w-8 rounded-full">
-          <img src={data.profileImg || "/avatar-placeholder.png"} />
+          <img src={profileImage} />
         </div>
       </div>
       <form className="flex flex-col gap-2 w-full" onSubmit={handleSubmit}>

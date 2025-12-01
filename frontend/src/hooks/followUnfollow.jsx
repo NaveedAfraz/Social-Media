@@ -8,7 +8,7 @@ const useFollow = () => {
     mutationFn: async (userId) => {
       try {
         const res = await axios.post(
-          `${process.env.BACKEND_URL}/api/user/follow/${userId}`,
+          `${import.meta.env.VITE_BACKEND_URL}/api/user/follow/${userId}`,
           {},
           { withCredentials: true }
         );

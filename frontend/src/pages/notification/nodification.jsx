@@ -14,7 +14,7 @@ const NotificationPage = () => {
     queryFn: async () => {
       try {
         const res = await axios.get(
-          `${process.env.BACKEND_URL}/api/nodification/FetchNodification`,
+          `${import.meta.env.VITE_BACKEND_URL}/api/nodification/FetchNodification`,
           {
             withCredentials: true,
           }
@@ -49,9 +49,9 @@ const NotificationPage = () => {
       console.log(nodificationOneID);
       let url;
       if (nodificationOneID) {
-        url = `${process.env.BACKEND_URL}/api/nodification/DeleteNodification/${nodificationOneID}`;
+        url = `${import.meta.env.VITE_BACKEND_URL}/api/nodification/DeleteNodification/${nodificationOneID}`;
       } else {
-        url = `${process.env.BACKEND_URL}/api/nodification/DeleteNodification`;
+        url = `${import.meta.env.VITE_BACKEND_URL}/api/nodification/DeleteNodification`;
       }
       try {
         const response = await axios.delete(url, { withCredentials: true });

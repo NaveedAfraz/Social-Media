@@ -4,6 +4,33 @@ const Nodification = require("../../models/nodification");
 const user = require("../../models/userSchema");
 const bcrypt = require("bcryptjs");
 
+const enrichFollowData = async (connections = []) => {
+  const usernames = connections
+    ?.map((connection) => connection?.username)
+    .filter(Boolean);
+
+  if (!usernames?.length) return connections || [];
+
+  const profiles = await user
+    .find({ username: { $in: usernames } })
+    .select("username profileImg coverImg bio")
+    .lean();
+
+  const profileMap = new Map(
+    profiles.map((profile) => [profile.username, profile])
+  );
+
+  return connections.map((connection) => {
+    const profile = profileMap.get(connection.username) || {};
+    return {
+      ...connection,
+      profileImg: profile.profileImg || "",
+      coverImg: profile.coverImg || "",
+      bio: profile.bio || "",
+    };
+  });
+};
+
 const getUserProfile = async (req, res) => {
   const { username } = req.params;
   console.log("username is this ", username);
@@ -11,13 +38,23 @@ const getUserProfile = async (req, res) => {
   try {
     const UserDeatils = await user
       .findOne({ username: username })
-      .select("-password");
+      .select("-password")
+      .lean();
     console.log("user is this ", UserDeatils);
 
     if (!UserDeatils) {
       return res.status(404).json({ message: "User not found" });
     }
-    return res.status(200).json({ message: "User found", User: UserDeatils });
+
+    const [followers, following] = await Promise.all([
+      enrichFollowData(UserDeatils.followers),
+      enrichFollowData(UserDeatils.following),
+    ]);
+
+    return res.status(200).json({
+      message: "User found",
+      User: { ...UserDeatils, followers, following },
+    });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: error.message });

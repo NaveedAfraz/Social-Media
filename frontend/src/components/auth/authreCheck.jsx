@@ -15,7 +15,7 @@ function AuthReCheck({ children }) {
     queryKey: ["authReCheck"],
     queryFn: async () => {
       const response = await axios.post(
-        `${process.env.BACKEND_URL}/api/auth/authReCheck`,
+        `${import.meta.env.VITE_BACKEND_URL}/api/auth/authReCheck`,
         {},
         { withCredentials: true }
       );
@@ -37,7 +37,7 @@ function AuthReCheck({ children }) {
 
   useEffect(() => {
     if (isSuccess) {
-      dispatch(isAuth(data));
+      dispatch(isAuth(data.UserDetails));
     }
   }, [data]);
 
@@ -54,7 +54,7 @@ function AuthReCheck({ children }) {
     );
   }
 
-  if (isError || !data?.success) {
+  if (isError || !data?.UserDetails) {
     console.log("AuthReCheck failed");
   }
   return (

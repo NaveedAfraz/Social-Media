@@ -4,6 +4,8 @@ import { Link } from "react-router-dom";
 import XLogo from "../../assets/X-black-copy.jpg";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
+import { useToast } from "../../components/ui/ToastContainer";
+import { useNavigate } from "react-router-dom";
 function SignupPage() {
   const [formData, setFormData] = useState({
     username: "",
@@ -11,6 +13,8 @@ function SignupPage() {
     password: "",
     confirmPassword: "",
   });
+  const { toastSuccess, toastError } = useToast();
+  const navigate = useNavigate();
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -29,7 +33,7 @@ function SignupPage() {
 
       try {
         const res = await axios.post(
-          `${process.env.BACKEND_URL}/api/auth/register`,
+          `${import.meta.env.VITE_BACKEND_URL}/api/auth/register`,
           {
             formData: data,
           },
@@ -39,12 +43,28 @@ function SignupPage() {
         return res.data;
       } catch (error) {
         console.log("something went wrong", error);
-
-        throw error.response.data;
+        throw error;
       }
     },
     onSuccess: (data) => {
       console.log("Registration successful!", data);
+      toastSuccess("Account created successfully!");
+      // Clear the form
+      setFormData({
+        username: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+      });
+      // Navigate to login page after a short delay
+      setTimeout(() => {
+        navigate("/login");
+      }, 1500);
+    },
+    onError: (error) => {
+      console.log("Registration error:", error);
+      const errorMessage = error.response?.data?.error || error.message || "Registration failed";
+      toastError(errorMessage);
     },
   });
   const handleSubmit = (e) => {
@@ -57,9 +77,9 @@ function SignupPage() {
   return (
     <div className="max-w-screen-xl mx-auto flex h-screen">
       {/* Left Section: Only visible on large screens */}
-      <div className="flex-1 hidden lg:flex items-center justify-center">
+      {/* <div className="flex-1 hidden lg:flex items-center justify-center">
         <img src={XLogo} alt="xlogo" className="max-w-full h-[60%]" />
-      </div>
+      </div> */}
 
       {/* Right Section: Form & Small Logo for mobile */}
       <div className="flex-1 flex flex-col justify-center items-center p-4">

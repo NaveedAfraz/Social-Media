@@ -8,9 +8,10 @@ const auth = createSlice({
   initialState,
   reducers: {
     isAuth: (state, action) => {
-      console.log(action.payload);
+      console.log(action.payload,"..");
       state.isAuthenticated = true;
-      state.userInfo = action.payload.user;
+      // Handle different response structures
+      state.userInfo = action.payload?.user || action.payload || null;
     },
     Logout: (state) => {
       state.userInfo = null; // This sets userInfo to null

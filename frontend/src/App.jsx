@@ -4,7 +4,8 @@ import {
   Routes,
   Route,
   useNavigate,
-  useLocation
+  useLocation,
+  Navigate
 } from "react-router-dom";
 import Home from "./pages/home/home";
 import Login from "./pages/auth/login";
@@ -19,10 +20,11 @@ import Messages from "./pages/messages/messages";
 import { ToastProvider } from "./components/ui/ToastContainer";
 import AuthLayout from "./components/auth/AuthLayout";
 function App() {
-  const { userInfo } = useSelector((state) => state.auth);
+  const { userInfo, isAuthenticated } = useSelector((state) => state.auth);
   console.log(userInfo);
   const navigate = useNavigate();
   const location = useLocation()
+
   useEffect(() => {
     if (userInfo && window.location.pathname === "/login") {
       navigate("/home");
@@ -37,6 +39,13 @@ function App() {
       navigate("/home")
     }
   }, [])
+  console.log(isAuthenticated)
+  // Redirect unauthenticated users to login
+  useEffect(() => {
+    if (!isAuthenticated && !isPublicRoute) {
+      navigate("/login");
+    }
+  }, [isAuthenticated, isPublicRoute, navigate]);
   return (
     <ToastProvider>
       <div className="flex">
@@ -50,11 +59,11 @@ function App() {
           </Route>
 
           <Route element={<AuthReCheck />}>
-            <Route path="/home" element={<Home />}></Route>
-            <Route path="/notifications" element={<NotificationPage />} />
+            <Route path="/home" element={isAuthenticated ? <Home /> : <Navigate to="/login" replace />} />
+            <Route path="/notifications" element={isAuthenticated ? <NotificationPage /> : <Navigate to="/login" replace />} />
             <Route path="/profile/:username" element={<ProfilePage />} />
-            <Route path="/messages" element={<Messages />}>
-              <Route path=":username" element={<Messages />} />
+            <Route path="/messages" element={isAuthenticated ? <Messages /> : <Navigate to="/login" replace />}>
+              <Route path=":username" element={isAuthenticated ? <Messages /> : <Navigate to="/login" replace />} />
             </Route>
           </Route>
         </Routes>

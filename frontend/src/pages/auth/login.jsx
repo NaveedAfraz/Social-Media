@@ -9,7 +9,7 @@ import { useDispatch } from "react-redux";
 import { isAuth } from "../../redux/authSlice";
 import { useToast } from "../../components/ui/ToastContainer";
 function LoginPage() {
-  const [formdata, setFormData] = useState({ email: "", password: "" });
+  const [formdata, setFormData] = useState({ email: "mohd1@gmail.com", password: "12341234" });
   const dispatch = useDispatch();
   const { toastSuccess, toastError } = useToast();
   const { isPending, isError, isSuccess, mutate, error } = useMutation({

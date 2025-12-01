@@ -8,7 +8,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { isAuth } from "../../redux/authSlice";
+import { isAuth, Logout } from "../../redux/authSlice";
 import { FaMessage } from "react-icons/fa6";
 import { ShowChat } from "../../redux/messagesControlSlice";
 const Sidebar = () => {
@@ -45,9 +45,12 @@ const Sidebar = () => {
       console.log("Logout successful");
       console.log(data);
       if (data.success) {
-        // navigate("/login");
-        queryClient.invalidateQueries({ queryKey: ["authUser"] });
-        dispatch(isAuth(false));
+        // Clear all cached queries
+        queryClient.clear();
+        // Clear user state
+        dispatch(Logout());
+        // Navigate to login
+        navigate("/login");
       }
     },
     onError: (error) => {

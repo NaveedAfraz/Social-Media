@@ -15,6 +15,7 @@ const auth = createSlice({
     },
     Logout: (state) => {
       state.userInfo = null; // This sets userInfo to null
+      state.isAuthenticated = false; // Reset authentication status
     },
   },
 });

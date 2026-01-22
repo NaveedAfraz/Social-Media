@@ -76,7 +76,7 @@ try {
 
 app.use("/api/nodification", nodificationRoutes);
 app.use("/api/Communication", CommunicationRoutes);
-
+ 
 // Debug route to catch all API requests
 app.use("/api/*", (req, res, next) => {
   console.log(`API Request: ${req.method} ${req.originalUrl}`);

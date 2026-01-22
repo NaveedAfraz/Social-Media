@@ -68,7 +68,7 @@ const Login = async (req, res) => {
 
     const matchPassword = await bcrypt.compare(
       formData.password,
-      userExists.password
+      userExists.password,
     );
     if (!matchPassword) {
       console.log("Password does not match");
@@ -86,13 +86,16 @@ const Login = async (req, res) => {
       process.env.SECRET_KEY,
       {
         expiresIn: "1d",
-      }
+      },
     );
 
     res.cookie("authtoken", Authtoken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: true, // Render is HTTPS → MUST be true
+      sameSite: "none", // ⭐ THIS IS THE KEY FIX
+      maxAge: 24 * 60 * 60 * 1000, // optional
     });
+
     return res.status(200).json({ success: true, user: userExists });
   } catch (error) {
     console.log(error);
@@ -109,8 +112,10 @@ const logout = async (req, res) => {
 
       res.clearCookie("authtoken", {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
+        secure: true,
+        sameSite: "none",
       });
+
       return res.status(200).json({ success: true });
     }
     return res.status(400).json({ error: "No cookie found" });
@@ -132,7 +137,7 @@ const enrichFollowData = async (connections = []) => {
     .lean();
 
   const profileMap = new Map(
-    profiles.map((profile) => [profile.username, profile])
+    profiles.map((profile) => [profile.username, profile]),
   );
 
   return connections.map((connection) => {
@@ -147,7 +152,10 @@ const enrichFollowData = async (connections = []) => {
 };
 const authReCheck = async (req, res) => {
   try {
-    const userData = await user.findById(req.User._id).select("-password").lean();
+    const userData = await user
+      .findById(req.User._id)
+      .select("-password")
+      .lean();
     console.log("user is this ", userData);
 
     if (!userData) {
